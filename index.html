@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Agent HUD — TDG Financial</title>
+<style>
+:root {
+  --bg:#f5f5f7; --card:#fff; --text:#1d1d1f; --text-secondary:#6e6e73;
+  --primary:#0071e3; --primary-dark:#0059b3; --success:#30d158;
+  --warning:#ff9f0a; --danger:#ff453a; --border:#d2d2d7;
+  --shadow:0 2px 12px rgba(0,0,0,0.08); --shadow-lg:0 8px 30px rgba(0,0,0,0.14);
+  --radius:16px; --radius-sm:10px; --input-bg:#f0f0f5;
+}
+[data-theme="dark"] {
+  --bg:#000; --card:#1c1c1e; --text:#f5f5f7; --text-secondary:#98989d;
+  --primary:#0a84ff; --primary-dark:#409cff; --border:#38383a;
+  --shadow:0 2px 12px rgba(0,0,0,0.35); --shadow-lg:0 8px 30px rgba(0,0,0,0.6);
+  --input-bg:#2c2c2e;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.3s,color 0.3s;}
+
+/* ── VIEWS ── */
+.view{display:none;}
+
+/* ── LOGIN ── */
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
+.login-logo{width:88px;height:88px;border-radius:24px;background:linear-gradient(135deg,#0071e3,#30d158);display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff;margin-bottom:20px;box-shadow:0 10px 30px rgba(0,113,227,0.35);}
+.login-title{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
+.login-title span{color:var(--primary);}
+.login-sub{font-size:15px;color:var(--text-secondary);margin-bottom:28px;font-weight:500;}
+.login-card{width:100%;max-width:380px;background:var(--card);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.field-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);margin-bottom:5px;}
+.text-input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--input-bg);color:var(--text);outline:none;transition:border-color 0.2s;font-family:inherit;}
+.text-input:focus{border-color:var(--primary);}
+.login-btn{width:100%;margin-top:16px;padding:15px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s;}
+.login-btn:active{opacity:0.85;}
+.login-error{display:none;margin-top:10px;padding:10px 14px;background:rgba(255,69,58,0.1);border:1.5px solid var(--danger);border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:var(--danger);text-align:center;}
+
+/* ── DASHBOARD ── */
+.hud-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+.hud-logo{display:flex;align-items:center;gap:10px;}
+.hud-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0071e3,#30d158);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;}
+.hud-title{font-size:17px;font-weight:800;letter-spacing:-0.3px;}
+.hud-title span{color:var(--primary);}
+.hud-actions{display:flex;gap:8px;}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s;}
+.icon-btn:active{transform:scale(0.9);}
+
+.dashboard-wrap{max-width:680px;margin:0 auto;padding:20px 16px 60px;}
+.dash-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);margin:20px 0 10px 2px;}
+
+/* HUD tiles */
+.tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.tile-grid.single{grid-template-columns:1fr;}
+.hud-tile{background:var(--card);border-radius:var(--radius);padding:20px 18px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;position:relative;overflow:hidden;}
+.hud-tile:active{transform:scale(0.97);}
+.hud-tile.primary-tile{border-color:var(--primary);background:linear-gradient(135deg,rgba(0,113,227,0.06),rgba(0,113,227,0.02));}
+.hud-tile.success-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(48,209,88,0.02));}
+.hud-tile.warning-tile{border-color:var(--warning);background:linear-gradient(135deg,rgba(255,159,10,0.06),rgba(255,159,10,0.02));}
+.hud-tile.discord-tile{border-color:#5865f2;background:linear-gradient(135deg,rgba(88,101,242,0.06),rgba(88,101,242,0.02));}
+.hud-tile.script-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(0,113,227,0.04));}
+.tile-icon{font-size:30px;margin-bottom:10px;display:block;}
+.tile-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;letter-spacing:-0.2px;}
+.tile-sub{font-size:12px;color:var(--text-secondary);font-weight:500;line-height:1.4;}
+.tile-arrow{position:absolute;top:16px;right:16px;font-size:16px;color:var(--border);}
+.tile-badge{position:absolute;top:12px;right:12px;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:0.4px;}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);overflow-y:auto;padding:0;}
+.modal-wrap{min-height:100vh;display:flex;flex-direction:column;}
+.modal-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.modal-back{width:34px;height:34px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-back:active{transform:scale(0.9);}
+.modal-title{font-size:17px;font-weight:800;color:var(--text);}
+.modal-content{flex:1;max-width:680px;width:100%;margin:0 auto;padding:20px 16px 60px;}
+
+/* Person card */
+.person-card{background:var(--card);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:14px;}
+.person-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.person-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.person-name{font-size:17px;font-weight:800;color:var(--text);}
+.person-role{font-size:12px;color:var(--text-secondary);font-weight:600;margin-top:1px;}
+.cal-btn{display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;text-decoration:none;transition:all 0.2s;font-family:inherit;}
+.cal-btn:active{transform:scale(0.98);}
+.cal-btn.primary{border-color:var(--primary);color:var(--primary);background:rgba(0,113,227,0.05);}
+.cal-btn.success{border-color:var(--success);color:var(--success);background:rgba(48,209,88,0.05);}
+.cal-btn.discord{border-color:#5865f2;color:#5865f2;background:rgba(88,101,242,0.05);}
+.cal-btn.warning{border-color:var(--warning);color:var(--warning);background:rgba(255,159,10,0.05);}
+.cal-btn.placeholder{border-color:var(--border);color:var(--text-secondary);opacity:0.6;cursor:default;}
+.cal-btn-icon{font-size:18px;flex-shrink:0;}
+.cal-btn-text{flex:1;text-align:left;}
+.cal-btn-label{font-size:13px;font-weight:700;}
+.cal-btn-detail{font-size:11px;font-weight:500;opacity:0.75;margin-top:1px;}
+
+/* Department tiles */
+.dept-tile{background:var(--card);border-radius:var(--radius);padding:20px 18px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:all 0.2s;}
+.dept-tile:active{transform:scale(0.98);}
+.dept-icon{font-size:28px;flex-shrink:0;}
+.dept-info{flex:1;}
+.dept-title{font-size:16px;font-weight:800;color:var(--text);}
+.dept-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+
+/* ── SCRIPT IFRAME VIEW ── */
+.iframe-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:fixed;top:0;left:0;right:0;z-index:50;}
+.iframe-back{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.iframe-back:active{transform:scale(0.97);}
+.iframe-title{font-size:15px;font-weight:800;color:var(--text);flex:1;text-align:center;}
+.script-iframe{position:fixed;top:57px;left:0;right:0;bottom:0;width:100%;border:none;background:var(--bg);}
+
+/* Theme btn (fixed) */
+.theme-fixed{position:fixed;top:16px;right:16px;z-index:200;width:36px;height:36px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);}
+
+@media(max-width:380px){
+  .tile-grid{grid-template-columns:1fr;}
+  .tile-icon{font-size:26px;}
+}
+</style>
+</head>
+<body>
+<script>
+// Force login on every load
+document.addEventListener('DOMContentLoaded',function(){
+  show('loginView');
+  var u=document.getElementById('loginUser');
+  if(u)u.focus();
+});
+</script>
+
+<!-- ── THEME BTN (login screen only) ── -->
+<button class="theme-fixed" id="globalThemeBtn" onclick="toggleTheme()">🌙</button>
+
+<!-- ════════════════════════════════════
+     LOGIN VIEW
+════════════════════════════════════ -->
+<div id="loginView" class="view">
+  <div class="login-wrap">
+    <div class="login-logo">🛡️</div>
+    <div class="login-title">Agent <span>HUD</span></div>
+    <div class="login-sub">TDG Financial — Operations Center</div>
+    <div class="login-card">
+      <div style="margin-bottom:10px;">
+        <label class="field-label">Username</label>
+        <input class="text-input" id="loginUser" placeholder="Enter username" autocomplete="off"
+          onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+      </div>
+      <div>
+        <label class="field-label">Password</label>
+        <input class="text-input" type="password" id="loginPass" placeholder="Enter password"
+          onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-error" id="loginError">Incorrect username or password.</div>
+      <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     DASHBOARD VIEW
+════════════════════════════════════ -->
+<div id="dashView" class="view">
+  <div class="hud-header">
+    <div class="hud-logo">
+      <div class="hud-logo-icon">🛡️</div>
+      <div class="hud-title">Agent <span>HUD</span></div>
+    </div>
+    <div class="hud-actions">
+      <button class="icon-btn" onclick="toggleTheme()" id="dashThemeBtn">🌙</button>
+      <button class="icon-btn" onclick="doLogout()" title="Sign out">🚪</button>
+    </div>
+  </div>
+
+  <div class="dashboard-wrap">
+
+    <div class="dash-section-label">Operations</div>
+    <div class="tile-grid">
+      <a class="hud-tile primary-tile" href="https://arc.naaleads.com/home" target="_blank" rel="noopener">
+        <span class="tile-icon">🏢</span>
+        <div class="tile-title">Backoffice</div>
+        <div class="tile-sub">NAA Leads Portal</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+      <a class="hud-tile warning-tile" href="https://thealliancecontracting.com/requests" target="_blank" rel="noopener">
+        <span class="tile-icon">📄</span>
+        <div class="tile-title">Carrier Contracts</div>
+        <div class="tile-sub">The Alliance Contracting</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="dash-section-label">Sales Tools</div>
+    <div class="tile-grid">
+      <a class="hud-tile success-tile" href="https://www.landing.insurancetoolkits.com/" target="_blank" rel="noopener">
+        <span class="tile-icon">📊</span>
+        <div class="tile-title">Quote Tools</div>
+        <div class="tile-sub">Insurance Toolkits</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+      <div class="hud-tile script-tile" onclick="openScriptTool()">
+        <span class="tile-icon">📋</span>
+        <div class="tile-title">Script Tool</div>
+        <div class="tile-sub">The Basics FE Script</div>
+        <span class="tile-arrow">▶</span>
+      </div>
+    </div>
+
+    <div class="dash-section-label">Community & Support</div>
+    <div class="tile-grid">
+      <a class="hud-tile discord-tile" href="https://discord.gg/5MPv2PXgY" target="_blank" rel="noopener">
+        <span class="tile-icon">💬</span>
+        <div class="tile-title">TDG Discord</div>
+        <div class="tile-sub">Community Channel</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+      <div class="hud-tile primary-tile" onclick="openModal('supportModal')">
+        <span class="tile-icon">🎧</span>
+        <div class="tile-title">Support</div>
+        <div class="tile-sub">Get help from the team</div>
+        <span class="tile-arrow">›</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SUPPORT MODAL
+════════════════════════════════════ -->
+<div id="supportModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header" style="background:var(--card);">
+      <button class="modal-back" onclick="closeModal('supportModal')">←</button>
+      <div class="modal-title">🎧 Support</div>
+    </div>
+    <div class="modal-content">
+      <div class="dash-section-label">Select Department</div>
+
+      <div class="dept-tile" onclick="openModal('onboardingModal')">
+        <div class="dept-icon">🚀</div>
+        <div class="dept-info">
+          <div class="dept-title">Onboarding Staff</div>
+          <div class="dept-sub">Getting started, licensing, setup</div>
+        </div>
+        <span style="color:var(--border);font-size:20px;">›</span>
+      </div>
+
+      <div class="dept-tile" onclick="openModal('coachingModal')">
+        <div class="dept-icon">📈</div>
+        <div class="dept-info">
+          <div class="dept-title">Coaching & Business Development</div>
+          <div class="dept-sub">Sales coaching, growth strategy</div>
+        </div>
+        <span style="color:var(--border);font-size:20px;">›</span>
+      </div>
+
+      <div class="dept-tile" onclick="openModal('pksModal')">
+        <div class="dept-icon">📚</div>
+        <div class="dept-info">
+          <div class="dept-title">Product Knowledge Support</div>
+          <div class="dept-sub">Carrier questions, product training</div>
+        </div>
+        <span style="color:var(--border);font-size:20px;">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ONBOARDING MODAL
+════════════════════════════════════ -->
+<div id="onboardingModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('onboardingModal');openModal('supportModal')">←</button>
+      <div class="modal-title">🚀 Onboarding Staff</div>
+    </div>
+    <div class="modal-content">
+
+      <!-- CHANDLER DAVIES -->
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(0,113,227,0.12);">👤</div>
+          <div>
+            <div class="person-name">Chandler Davies</div>
+            <div class="person-role">Onboarding Specialist</div>
+          </div>
+        </div>
+        <a class="cal-btn primary" href="https://link.dashlypro.com/widget/booking/nwNmTjnQSk5W9enz8DS2" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">📅</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Agent Support</div>
+            <div class="cal-btn-detail">Book a support session</div>
+          </div>
+          <span>↗</span>
+        </a>
+        <a class="cal-btn success" href="https://link.dashlypro.com/widget/booking/vT45fRpeS1W8Wv7WSyZs" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">🎓</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Onboarding Class</div>
+            <div class="cal-btn-detail">Schedule your onboarding class</div>
+          </div>
+          <span>↗</span>
+        </a>
+        <a class="cal-btn warning" href="https://link.dashlypro.com/widget/booking/1x48T9Kv2QrXkjEdLNIu" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">🔍</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Referral Discovery Call</div>
+            <div class="cal-btn-detail">Explore referral opportunities</div>
+          </div>
+          <span>↗</span>
+        </a>
+        <a class="cal-btn discord" href="https://discord.com/users/chandler_davies" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">💬</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Message on Discord</div>
+            <div class="cal-btn-detail">Direct message Chandler</div>
+          </div>
+          <span>↗</span>
+        </a>
+      </div>
+
+      <!-- JONATHAN -->
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(48,209,88,0.12);">👤</div>
+          <div>
+            <div class="person-name">Jonathan</div>
+            <div class="person-role">Onboarding Specialist</div>
+          </div>
+        </div>
+        <div class="cal-btn placeholder">
+          <span class="cal-btn-icon">📅</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Calendar — Coming Soon</div>
+            <div class="cal-btn-detail">Booking link will be added shortly</div>
+          </div>
+        </div>
+        <div class="cal-btn placeholder">
+          <span class="cal-btn-icon">💬</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Discord — Coming Soon</div>
+            <div class="cal-btn-detail">Discord link will be added shortly</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KEPLER -->
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(255,159,10,0.12);">⚡</div>
+          <div>
+            <div class="person-name">Kepler</div>
+            <div class="person-role">Onboarding Staff</div>
+          </div>
+        </div>
+        <div class="cal-btn placeholder">
+          <span class="cal-btn-icon">📅</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Calendar — Coming Soon</div>
+            <div class="cal-btn-detail">Booking link will be added shortly</div>
+          </div>
+        </div>
+        <div class="cal-btn placeholder">
+          <span class="cal-btn-icon">💬</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Discord — Coming Soon</div>
+            <div class="cal-btn-detail">Discord link will be added shortly</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     COACHING MODAL (Josh Owens)
+════════════════════════════════════ -->
+<div id="coachingModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('coachingModal');openModal('supportModal')">←</button>
+      <div class="modal-title">📈 Coaching & Business Development</div>
+    </div>
+    <div class="modal-content">
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(48,209,88,0.12);">🏆</div>
+          <div>
+            <div class="person-name">Josh Owens</div>
+            <div class="person-role">Coaching & Business Development</div>
+          </div>
+        </div>
+        <a class="cal-btn primary" href="https://link.dashlypro.com/widget/booking/AvVE2vXmRJX53jjd45w3?sessionId=211d36dc-5d4f-448f-857f-73502f4016a5&trigger_link=4IPKsjvDFLdY8RucQkeD" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">📅</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Book a Coaching Session</div>
+            <div class="cal-btn-detail">Schedule time with Josh</div>
+          </div>
+          <span>↗</span>
+        </a>
+        <a class="cal-btn discord" href="https://discord.com/users/joshowens16" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">💬</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Message on Discord</div>
+            <div class="cal-btn-detail">Direct message Josh</div>
+          </div>
+          <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PRODUCT KNOWLEDGE MODAL (Josh Owens)
+════════════════════════════════════ -->
+<div id="pksModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('pksModal');openModal('supportModal')">←</button>
+      <div class="modal-title">📚 Product Knowledge Support</div>
+    </div>
+    <div class="modal-content">
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(48,209,88,0.12);">🏆</div>
+          <div>
+            <div class="person-name">Josh Owens</div>
+            <div class="person-role">Product Knowledge Support</div>
+          </div>
+        </div>
+        <a class="cal-btn primary" href="https://link.dashlypro.com/widget/booking/AvVE2vXmRJX53jjd45w3?sessionId=211d36dc-5d4f-448f-857f-73502f4016a5&trigger_link=4IPKsjvDFLdY8RucQkeD" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">📅</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Book a Product Knowledge Session</div>
+            <div class="cal-btn-detail">Schedule time with Josh</div>
+          </div>
+          <span>↗</span>
+        </a>
+        <a class="cal-btn discord" href="https://discord.com/users/joshowens16" target="_blank" rel="noopener">
+          <span class="cal-btn-icon">💬</span>
+          <div class="cal-btn-text">
+            <div class="cal-btn-label">Message on Discord</div>
+            <div class="cal-btn-detail">Direct message Josh</div>
+          </div>
+          <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCRIPT TOOL VIEW (iframe)
+════════════════════════════════════ -->
+<div id="scriptView" class="view">
+  <div class="iframe-header">
+    <button class="iframe-back" onclick="closeScriptTool()">← HUD</button>
+    <div class="iframe-title">📋 The Basics — FE Script</div>
+  </div>
+  <iframe id="scriptIframe" class="script-iframe" src="" title="The Basics FE Script Tool" allow="clipboard-write"></iframe>
+</div>
+
+<script>
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  const icon=dark?'🌙':'☀️';
+  ['globalThemeBtn','dashThemeBtn'].forEach(id=>{
+    const b=document.getElementById(id);if(b)b.textContent=icon;
+  });
+}
+
+// ─── VIEW / MODAL SYSTEM ─────────────────────────────────────────────────────
+function show(id){
+  ['loginView','dashView','scriptView'].forEach(v=>{
+    const el=document.getElementById(v);
+    if(el)el.style.display=(v===id)?'block':'none';
+  });
+  // hide fixed theme btn in iframe view
+  const tb=document.getElementById('globalThemeBtn');
+  if(tb)tb.style.display=id==='scriptView'?'none':'flex';
+  window.scrollTo(0,0);
+}
+
+function openModal(id){
+  const m=document.getElementById(id);
+  if(m){m.style.display='block';m.scrollTop=0;}
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  const m=document.getElementById(id);
+  if(m)m.style.display='none';
+  // only restore scroll if no other modals open
+  const anyOpen=['supportModal','onboardingModal','coachingModal','pksModal']
+    .some(mid=>{const el=document.getElementById(mid);return el&&el.style.display==='block';});
+  if(!anyOpen)document.body.style.overflow='';
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  const err=document.getElementById('loginError');
+  if(user==='Winning'&&pass==='Team'){
+    err.style.display='none';
+    show('dashView');
+  } else {
+    err.style.display='block';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+  }
+}
+function doLogout(){
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').style.display='none';
+  show('loginView');
+  document.getElementById('loginUser').focus();
+}
+
+// ─── SCRIPT TOOL ─────────────────────────────────────────────────────────────
+function openScriptTool(){
+  const iframe=document.getElementById('scriptIframe');
+  if(!iframe.src||iframe.src==='about:blank'||iframe.src===''){
+    iframe.src='https://trepin3.github.io/The-Basics/';
+  }
+  show('scriptView');
+}
+function closeScriptTool(){
+  show('dashView');
+}
+</script>
+</body>
+</html>
