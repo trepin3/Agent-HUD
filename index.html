@@ -105,11 +105,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .dept-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
 
 /* ── SCRIPT IFRAME VIEW ── */
-.iframe-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:fixed;top:0;left:0;right:0;z-index:50;}
+#scriptView{position:fixed;inset:0;display:flex;flex-direction:column;z-index:40;}
+.iframe-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .iframe-back{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .iframe-back:active{transform:scale(0.97);}
 .iframe-title{font-size:15px;font-weight:800;color:var(--text);flex:1;text-align:center;}
-.script-iframe{position:fixed;top:57px;left:0;right:0;bottom:0;width:100%;border:none;background:var(--bg);}
+.script-iframe{flex:1;min-height:0;width:100%;border:none;background:var(--bg);}
 
 /* Theme btn (fixed) */
 .theme-fixed{position:fixed;top:16px;right:16px;z-index:200;width:36px;height:36px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);}
@@ -481,7 +482,7 @@ function toggleTheme(){
 function show(id){
   ['loginView','dashView','scriptView'].forEach(v=>{
     const el=document.getElementById(v);
-    if(el)el.style.display=(v===id)?'block':'none';
+    if(el)el.style.display=(v===id)?(v==='scriptView'?'flex':'block'):'none';
   });
   // hide fixed theme btn in iframe view
   const tb=document.getElementById('globalThemeBtn');
