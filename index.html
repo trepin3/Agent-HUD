@@ -528,7 +528,8 @@ function doLogout(){
 // ─── SCRIPT TOOL ─────────────────────────────────────────────────────────────
 function openScriptTool(){
   const iframe=document.getElementById('scriptIframe');
-  if(!iframe.src||iframe.src==='about:blank'||iframe.src===''){
+  if(!iframe.getAttribute('data-loaded')){
+    iframe.setAttribute('data-loaded','1');
     iframe.src='https://trepin3.github.io/The-Basics/';
   }
   show('scriptView');
