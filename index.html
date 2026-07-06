@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 <!-- ── THEME BTN (login screen only) ── -->
-<button class="theme-fixed" id="globalThemeBtn" onclick="toggleTheme()">🌙</button>
 
 <!-- ════════════════════════════════════
      LOGIN VIEW
@@ -464,8 +463,8 @@ document.addEventListener('DOMContentLoaded',function(){
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
           <span style="font-size:32px;">📈</span>
           <div>
-            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Book Your Business Development Call</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Get your CRM access &amp; leadflow turned on.</div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Get your CRM access &amp; leadflow turned on.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Book Your Business Development Call</div>
           </div>
         </div>
         <a href="https://link.dashlypro.com/widget/booking/AvVE2vXmRJX53jjd45w3?sessionId=211d36dc-5d4f-448f-857f-73502f4016a5&trigger_link=4IPKsjvDFLdY8RucQkeD" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.4);color:#fff;font-size:14px;font-weight:800;text-decoration:none;">
@@ -480,7 +479,7 @@ document.addEventListener('DOMContentLoaded',function(){
           <span style="font-size:32px;">🎯</span>
           <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Get Coached to Convert More</div>
         </div>
-        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>DM or call Josh on Discord</strong> with the lead's name after every non-sale presentation — he'll review the call and coach you on how to convert.</div>
+        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>DM or call Josh on Discord</strong> with the lead's name any time you do a sales presentation that doesn't close — he'll review the call and coach you on how to convert.</div>
       </div>
 
       <div class="person-card">
@@ -685,9 +684,7 @@ function toggleTheme(){
   const dark=html.getAttribute('data-theme')==='dark';
   html.setAttribute('data-theme',dark?'light':'dark');
   const icon=dark?'🌙':'☀️';
-  ['globalThemeBtn','dashThemeBtn'].forEach(id=>{
-    const b=document.getElementById(id);if(b)b.textContent=icon;
-  });
+  const b=document.getElementById('dashThemeBtn');if(b)b.textContent=icon;
 }
 
 // ─── VIEW / MODAL SYSTEM ─────────────────────────────────────────────────────
@@ -696,9 +693,6 @@ function show(id){
     const el=document.getElementById(v);
     if(el)el.style.display=(v===id)?(v==='scriptView'?'flex':'block'):'none';
   });
-  // hide fixed theme btn in iframe view
-  const tb=document.getElementById('globalThemeBtn');
-  if(tb)tb.style.display=id==='scriptView'?'none':'flex';
   window.scrollTo(0,0);
 }
 
