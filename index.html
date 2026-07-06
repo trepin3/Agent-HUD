@@ -287,6 +287,26 @@ document.addEventListener('DOMContentLoaded',function(){
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
       </div>
+
+      <div class="dash-section-label">Rent A Closer</div>
+
+      <div class="dept-tile" onclick="openModal('iulModal')">
+        <div class="dept-icon">💰</div>
+        <div class="dept-info">
+          <div class="dept-title">IUL</div>
+          <div class="dept-sub">Indexed Universal Life specialist</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+
+      <div class="dept-tile" onclick="openModal('estatePlanningModal')">
+        <div class="dept-icon">📜</div>
+        <div class="dept-info">
+          <div class="dept-title">Estate Planning</div>
+          <div class="dept-sub">Will, trust &amp; annuity solutions</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
     </div>
   </div>
 </div>
@@ -570,6 +590,84 @@ document.addEventListener('DOMContentLoaded',function(){
 </div>
 
 <!-- ════════════════════════════════════
+     IUL MODAL (Gina Hawks)
+════════════════════════════════════ -->
+<div id="iulModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('iulModal');openModal('supportModal')">←</button>
+      <div class="modal-title">💰 IUL</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#b06000,#e8920a);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(176,96,0,0.45);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">⭐</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Gina Hawks — IMO's #1 IUL Closer</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Indexed Universal Life specialist</div>
+          </div>
+        </div>
+        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>Her calendar is first come, first served</strong> and there is typically a wait — set your client's expectations accordingly before booking.</div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(176,96,0,0.12);">⭐</div>
+          <div>
+            <div class="person-name">Gina Hawks</div>
+            <div class="person-role">IUL Specialist — Integrity Marketing</div>
+          </div>
+        </div>
+        <a href="https://bookings.cloud.microsoft/book/GinaHawksIULAppointmentsCalendar@integritymarketing.com/?ismsaljsauthenabled=true" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(176,96,0,0.08);border:1.5px solid #e8920a;color:#b06000;font-size:14px;font-weight:800;text-decoration:none;">
+          📅 Book with Gina &nbsp;↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ESTATE PLANNING MODAL (Christopher Norris)
+════════════════════════════════════ -->
+<div id="estatePlanningModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('estatePlanningModal');openModal('supportModal')">←</button>
+      <div class="modal-title">📜 Estate Planning</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#1a3a5c,#2c6096);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(26,58,92,0.5);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">📜</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Christopher Norris IAS — Estate Planning</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Will, trust &amp; annuity solutions</div>
+          </div>
+        </div>
+        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>Christopher Norris IAS</strong> helps your clients get their will and trust in order — and in doing so, he professionally sets you up to come back in and write the Annuity. A seamless handoff that serves your client and grows your business.</div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(26,58,92,0.12);">📜</div>
+          <div>
+            <div class="person-name">Christopher Norris IAS</div>
+            <div class="person-role">Estate Planning — Integrity Wealth Solutions</div>
+          </div>
+        </div>
+        <a href="https://bookings.cloud.microsoft/book/ChristopherNorrisIAS@IntegrityWealthSolutions.com/?ismsaljsauthenabled" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(26,58,92,0.08);border:1.5px solid #2c6096;color:#1a3a5c;font-size:14px;font-weight:800;text-decoration:none;">
+          📅 Book with Christopher &nbsp;↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      SCRIPT TOOL VIEW (iframe)
 ════════════════════════════════════ -->
 <div id="scriptView" class="view">
@@ -613,7 +711,7 @@ function closeModal(id){
   const m=document.getElementById(id);
   if(m)m.style.display='none';
   // only restore scroll if no other modals open
-  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal']
+  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal']
     .some(mid=>{const el=document.getElementById(mid);return el&&el.style.display==='block';});
   if(!anyOpen)document.body.style.overflow='';
 }
