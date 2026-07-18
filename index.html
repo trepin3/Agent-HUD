@@ -126,6 +126,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 /* Theme btn (fixed) */
 .theme-fixed{position:fixed;top:16px;right:16px;z-index:200;width:36px;height:36px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);}
 
+/* ── RECRUITING TEMPLATES ── */
+.template-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.template-step-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.copy-btn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--primary);background:rgba(0,113,227,0.08);color:var(--primary);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;}
+.copy-btn:active{transform:scale(0.95);}
+.copy-btn.copied{border-color:var(--success);background:rgba(48,209,88,0.1);color:var(--success);}
+.template-text{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+.upline-select-btn{width:100%;background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.upline-select-btn:active{transform:scale(0.97);}
+.upline-select-btn.kepler{border-color:rgba(255,159,10,0.9);background:#fff;box-shadow:0 4px 20px rgba(255,159,10,0.25);}
+.upline-select-btn.jonathan{border-color:rgba(48,209,88,0.9);background:#fff;box-shadow:0 4px 20px rgba(48,209,88,0.25);}
+
 @media(max-width:380px){
   .tile-grid{grid-template-columns:1fr;}
   .tile-icon{font-size:26px;}
@@ -140,6 +152,433 @@ document.addEventListener('DOMContentLoaded',function(){
   var u=document.getElementById('loginUser');
   if(u)u.focus();
 });
+
+// ─── RECRUITING OUTREACH ──────────────────────────────────────────────────────
+var recruitUpline = null;
+var currentTemplates = [];
+
+function selectLaunchHudUpline(name) {
+  var url = name === 'Kepler'
+    ? 'https://trepin3.github.io/K-Launch-HUD/'
+    : 'https://trepin3.github.io/J-Launch-HUD/';
+  closeModal('launchHudUplineModal');
+  window.open(url, '_blank');
+}
+
+function selectUpline(name) {
+  var hudLink = name === 'Kepler'
+    ? 'https://trepin3.github.io/K-Launch-HUD/'
+    : 'https://trepin3.github.io/J-Launch-HUD/';
+  recruitUpline = {name: name, hudLink: hudLink};
+  closeModal('recruitingUplineModal');
+  document.getElementById('scenarioModalTitle').textContent = '\u{1F4F1} ' + name + ' — Select Scenario';
+  openModal('recruitingScenarioModal');
+}
+
+function selectScenario(key) {
+  closeModal('recruitingScenarioModal');
+  renderTemplates(key);
+  openModal('recruitingTemplateModal');
+}
+
+function renderTemplates(key) {
+  var scenario = RECRUITING_TEMPLATES[key];
+  var uplineName = recruitUpline.name;
+  var hudLink = recruitUpline.hudLink;
+  currentTemplates = scenario.steps.map(function(step) {
+    return step.text
+      .replace(/\{\{upline_name\}\}/g, uplineName)
+      .replace(/\{\{launch_hud_link\}\}/g, hudLink);
+  });
+  document.getElementById('templateModalTitle').textContent = scenario.title;
+  var html = '';
+  scenario.steps.forEach(function(step, idx) {
+    var text = currentTemplates[idx];
+    var escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html += '<div class="template-card">' +
+      '<div class="template-step-label"><span>' + step.label + '</span>' +
+      '<button class="copy-btn" onclick="copyTemplate(' + idx + ')">Copy</button></div>' +
+      '<div class="template-text">' + escaped + '</div>' +
+      '</div>';
+  });
+  document.getElementById('templateList').innerHTML = html;
+}
+
+function copyTemplate(idx) {
+  var text = currentTemplates[idx];
+  var btns = document.querySelectorAll('#templateList .copy-btn');
+  var btn = btns[idx];
+  function markCopied() {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(function() { fallbackCopy(text, markCopied); });
+  } else {
+    fallbackCopy(text, markCopied);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  if (cb) cb();
+}
+
+var RECRUITING_TEMPLATES = {
+
+  warm_licensed: {
+    title: 'Warm Market — Licensed Agent',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, I was thinking about you today and wanted to ask you something.
+
+Are you still happy with where you're building your insurance business?`},
+      {label: 'Discovery', text: `That's good to know.
+
+I'm curious...
+
+If you could change one thing about your business right now, what would it be?
+
+More support?
+
+Better leads?
+
+Better training?
+
+Better technology?
+
+More freedom?
+
+Higher income?`},
+      {label: 'Invite Them', text: `The reason I asked is because we've been building something that's pretty different from what I've seen in the industry.
+
+As we were putting everything together, you were honestly one of the people that came to mind.
+
+I thought it might be something you'd appreciate.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take about 10 minutes whenever you have some free time and click through it.
+
+When you're finished, there's a link inside to schedule a conversation with {{upline_name}}.
+
+No pressure at all.
+
+I just think it's worth seeing before you decide whether it's something you'd want to be part of.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Just curious...
+
+Did anything in the Launch HUD stand out to you?`},
+      {label: 'Follow Up 2', text: `I've been wondering what you thought after looking through everything.
+
+Anything surprise you?`},
+      {label: 'Follow Up 3', text: `I know life gets busy, so I just wanted to check in one last time.
+
+If you think it might be a fit, I'd definitely recommend scheduling some time with {{upline_name}}.
+
+Even if it's just to ask questions, I think you'll enjoy the conversation.`}
+    ]
+  },
+
+  warm_close_friend: {
+    title: 'Warm Market — Licensed Close Friend',
+    steps: [
+      {label: 'Initial Text', text: `Hey, let me ask you something.
+
+If you were starting your insurance business over today, knowing everything you know now, would you build it the same way?`},
+      {label: 'Continue', text: `That's honestly why I reached out.
+
+We've been putting together something that I wish existed years ago.
+
+You've always been someone I respect, so I figured I'd send it your way before I shared it with a bunch of other people.
+
+Think you'd be willing to check it out?`},
+      {label: 'Send Launch HUD', text: `Perfect.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take a few minutes and click through it.
+
+If you like what you see, there's a link inside where you can schedule some time with {{upline_name}} to ask questions and see if it makes sense for you.
+
+I'd really like to hear what you think.`}
+    ]
+  },
+
+  warm_unlicensed: {
+    title: 'Warm Market — Unlicensed Friend',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, random question.
+
+Have you ever thought about getting into the insurance or financial industry?`},
+      {label: 'If Yes', text: `Really?
+
+What got you interested?`},
+      {label: 'If No', text: `No worries.
+
+Can I ask what you're doing for work these days?
+
+How are you liking it?`},
+      {label: 'Discovery', text: `The reason I'm asking is because we've been helping people build businesses in this industry, even if they've never sold insurance before.
+
+When I was thinking about who might actually benefit from it, your name came to mind.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Spend about 10 minutes going through it whenever you get a chance.
+
+If it looks interesting, there's a link inside where you can schedule a conversation with {{upline_name}}.
+
+They'll answer your questions and explain what getting started would actually look like.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Were you able to take a look yet?
+
+I'm curious what your first impression was.`},
+      {label: 'Follow Up 2', text: `No rush at all.
+
+I just wanted to see if anything caught your attention or if you had any questions after looking through it.`},
+      {label: 'Follow Up 3', text: `I wanted to reach out one last time.
+
+Whether it's a fit or not, I'd still love to hear what you thought.
+
+If you're interested, I'd definitely recommend scheduling some time with {{upline_name}}.`}
+    ]
+  },
+
+  cold_licensed: {
+    title: 'Cold Market — Licensed Agent',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, this is {{agent_name}}.
+
+It was great meeting you today.
+
+I enjoyed our conversation and wanted to stay in touch.
+
+You mentioned you've been in the insurance industry, so I wanted to ask...
+
+How are things going for you these days?`},
+      {label: 'Discovery', text: `That's awesome.
+
+I'm curious...
+
+If you could improve one thing about your business, what would it be?`},
+      {label: 'Invite Them', text: `The reason I ask is because I've been working with a group that's built some really solid systems for agents who want to grow their business.
+
+As we were talking earlier, I thought it might be something you'd appreciate.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Spend about 10 minutes going through it whenever you have some time.
+
+When you're finished, you'll see a link inside where you can schedule a conversation with {{upline_name}}.
+
+I'd love to hear what you think after you've had a chance to look through everything.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Just wanted to check in.
+
+Were you able to look through the Launch HUD?
+
+I'm curious what stood out to you.`},
+      {label: 'Follow Up 2', text: `Hope your week's going well.
+
+Did anything catch your attention, or do you have any questions before connecting with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `Just wanted to follow up one last time.
+
+If you're still interested in seeing another way to build an agency, I'd definitely recommend scheduling some time with {{upline_name}}.
+
+I think it'll be worth the conversation.`}
+    ]
+  },
+
+  cold_unlicensed: {
+    title: 'Cold Market — Unlicensed Prospect',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, this is {{agent_name}}.
+
+It was great meeting you today.
+
+I really enjoyed our conversation and wanted to stay in touch.
+
+Can I ask you something?`},
+      {label: 'Continue', text: `Have you ever thought about building a business in the financial or insurance industry?`},
+      {label: 'If Yes', text: `Very cool.
+
+What got you interested?`},
+      {label: 'If No', text: `No worries.
+
+What do you do for work these days?
+
+Do you enjoy it?`},
+      {label: 'Discovery', text: `If you had the chance to build something with more flexibility, more income potential, and people helping you every step of the way, would you be interested in learning more?`},
+      {label: 'Invite Them', text: `That's exactly why I wanted to reach back out.
+
+We've been helping people build businesses in this industry, even if they've never been licensed before.
+
+Instead of trying to explain everything over text, we've put together a Launch HUD that walks through how everything works.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take about 10 minutes to look through it.
+
+When you're finished, you'll find a link inside where you can schedule a conversation with {{upline_name}}.
+
+You'll be able to ask questions, learn more about the opportunity, and decide if it's something you'd like to pursue.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Were you able to check out the Launch HUD?
+
+I'd love to hear what your first impression was.`},
+      {label: 'Follow Up 2', text: `Just wanted to check back in.
+
+Did anything stand out to you, or is there anything you'd like to ask before talking with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `I know life gets busy, so I wanted to reach out one last time.
+
+If you're still interested in learning more, I'd definitely recommend scheduling a conversation with {{upline_name}} through the Launch HUD.
+
+No pressure at all.
+
+I just wanted to make sure you had the opportunity.`}
+    ]
+  },
+
+  social_licensed: {
+    title: 'Social Media DM — Licensed Agent',
+    steps: [
+      {label: 'Initial DM', text: `Hey {{first_name}},
+
+I came across your profile and noticed you're in the insurance industry.
+
+I like connecting with other agents, so I figured I'd introduce myself.
+
+How long have you been in the business?`},
+      {label: 'If They Respond', text: `Very nice.
+
+What part of the business do you enjoy the most?`},
+      {label: 'Discovery', text: `I'm always interested in hearing how other agents are building their business.
+
+If you could improve one thing about where you're at today, what would it be?`},
+      {label: 'Invite Them', text: `The reason I ask is because our team has been building some systems that have really helped agents grow.
+
+As we were talking, I thought you might find it interesting.
+
+Would you be open to taking a quick look?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Spend about 10 minutes clicking through it whenever you have time.
+
+When you're finished, there's a link inside where you can schedule a conversation with {{upline_name}}.
+
+I'd love to hear what you think after you've looked through it.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Just wanted to see if you had a chance to look through the Launch HUD.
+
+I'm curious what stood out to you.`},
+      {label: 'Follow Up 2', text: `Just checking back in.
+
+Did anything catch your attention, or do you have any questions before talking with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `Wanted to follow up one last time.
+
+If you're still open to seeing another way of building your business, I'd definitely recommend scheduling some time with {{upline_name}}.
+
+I think it'll be worth the conversation.`}
+    ]
+  },
+
+  social_unlicensed: {
+    title: 'Social Media DM — Unlicensed Prospect',
+    steps: [
+      {label: 'Initial DM', text: `Hey {{first_name}},
+
+I came across your profile and wanted to introduce myself.
+
+I enjoy connecting with people who are motivated and building their careers.
+
+Can I ask you a quick question?`},
+      {label: 'Continue', text: `Have you ever considered building a business in the financial or insurance industry?`},
+      {label: 'If Yes', text: `Very cool.
+
+What got you interested?`},
+      {label: 'If No', text: `No worries.
+
+What do you do for work these days?
+
+Do you enjoy it?`},
+      {label: 'Discovery', text: `If you had the opportunity to build something with more flexibility, uncapped income potential, and a team helping you every step of the way, would you be interested in learning more?`},
+      {label: 'Invite Them', text: `That's actually why I reached out.
+
+We've been helping people build businesses in this industry, even if they've never worked in insurance before.
+
+Instead of trying to explain everything over messages, we've put together a Launch HUD that walks through the business and how we help people get started.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take about 10 minutes to look through everything.
+
+When you're finished, you'll find a link inside where you can schedule a conversation with {{upline_name}}.
+
+That gives you the opportunity to ask questions and decide whether it's something you'd like to pursue.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Were you able to check out the Launch HUD?
+
+I'd love to hear your first impression.`},
+      {label: 'Follow Up 2', text: `Just checking back in.
+
+Did anything stand out to you, or do you have any questions before connecting with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `Wanted to reach out one last time.
+
+If you're still curious about building something for yourself, I'd definitely recommend taking a look at the Launch HUD and scheduling a conversation with {{upline_name}}.
+
+No pressure at all.
+
+I just wanted to make sure you had the opportunity.`}
+    ]
+  }
+
+};
+
 </script>
 
 <!-- ── THEME BTN (login screen only) ── -->
@@ -231,6 +670,31 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="tile-sub">Business growth & team support</div>
         <span class="tile-arrow">›</span>
       </div>
+    </div>
+    <div class="dash-section-label">Builder Tools</div>
+    <div class="tile-grid">
+      <div class="hud-tile primary-tile" onclick="openModal('recruitingUplineModal')">
+        <span class="tile-icon">📱</span>
+        <div class="tile-title">Recruiting Outreach</div>
+        <div class="tile-sub">Text message templates by market &amp; scenario</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+      <div class="hud-tile success-tile" onclick="openModal('launchHudUplineModal')">
+        <span class="tile-icon">&#128640;</span>
+        <div class="tile-title">Launch HUD</div>
+        <div class="tile-sub">Share to jumpstart others journeys</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+    </div>
+
+    <div class="dash-section-label">Agent Development</div>
+    <div class="tile-grid">
+      <a class="hud-tile success-tile" href="https://agentacademy.thinkific.com/courses/remote-agent-training" target="_blank" rel="noopener">
+        <span class="tile-icon">&#127891;</span>
+        <div class="tile-title">Agent Academy</div>
+        <div class="tile-sub">Remote agent training</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </a>
     </div>
 
   </div>
@@ -666,6 +1130,172 @@ document.addEventListener('DOMContentLoaded',function(){
   </div>
 </div>
 
+
+<!-- ════════════════════════════════════
+     RECRUITING UPLINE SELECT MODAL
+════════════════════════════════════ -->
+<div id="recruitingUplineModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('recruitingUplineModal')">&#8592;</button>
+      <div class="modal-title">&#128241; Recruiting Outreach</div>
+    </div>
+    <div class="modal-content">
+      <div style="background:linear-gradient(135deg,#003fa8,#0a84ff);border-radius:var(--radius);padding:22px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,85,196,0.65),0 2px 8px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.22);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.7);margin-bottom:10px;">&#128276; Read Before Selecting</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Who is your upline?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.92);line-height:1.6;">Select your upline to automatically load the correct Launch HUD link into every text template below.</div>
+      </div>
+      <button class="upline-select-btn kepler" onclick="selectUpline('Kepler')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,159,10,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#9889;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Kepler</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">Onboarding Staff &nbsp;&#x203A;</div>
+        </div>
+      </button>
+      <button class="upline-select-btn jonathan" onclick="selectUpline('Jonathan')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(48,209,88,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#128100;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Jonathan</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">Onboarding Specialist &nbsp;&#x203A;</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RECRUITING SCENARIO SELECT MODAL
+════════════════════════════════════ -->
+<div id="recruitingScenarioModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('recruitingScenarioModal');openModal('recruitingUplineModal')">&#8592;</button>
+      <div class="modal-title" id="scenarioModalTitle">&#128241; Select Scenario</div>
+    </div>
+    <div class="modal-content">
+
+      <div class="dash-section-label">Warm Market</div>
+
+      <div class="dept-tile" onclick="selectScenario('warm_licensed')">
+        <div class="dept-icon">&#129309;</div>
+        <div class="dept-info">
+          <div class="dept-title">Licensed Agent</div>
+          <div class="dept-sub">Already in the industry, open to a better opportunity</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('warm_close_friend')">
+        <div class="dept-icon">&#127775;</div>
+        <div class="dept-info">
+          <div class="dept-title">Licensed Close Friend</div>
+          <div class="dept-sub">Someone you know well who is already licensed</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('warm_unlicensed')">
+        <div class="dept-icon">&#127919;</div>
+        <div class="dept-info">
+          <div class="dept-title">Unlicensed Friend</div>
+          <div class="dept-sub">Someone in your warm market not yet in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dash-section-label">Cold Market</div>
+
+      <div class="dept-tile" onclick="selectScenario('cold_licensed')">
+        <div class="dept-icon">&#128083;</div>
+        <div class="dept-info">
+          <div class="dept-title">Licensed Agent</div>
+          <div class="dept-sub">Met in person, already licensed, open to conversation</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('cold_unlicensed')">
+        <div class="dept-icon">&#128100;</div>
+        <div class="dept-info">
+          <div class="dept-title">Unlicensed Prospect</div>
+          <div class="dept-sub">Met in person, not yet in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dash-section-label">Social Media</div>
+
+      <div class="dept-tile" onclick="selectScenario('social_licensed')">
+        <div class="dept-icon">&#128241;</div>
+        <div class="dept-info">
+          <div class="dept-title">DM to Licensed Agent</div>
+          <div class="dept-sub">LinkedIn or Facebook outreach to someone already in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('social_unlicensed')">
+        <div class="dept-icon">&#128241;</div>
+        <div class="dept-info">
+          <div class="dept-title">DM to Unlicensed Prospect</div>
+          <div class="dept-sub">LinkedIn or Facebook outreach to someone not yet in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RECRUITING TEMPLATE MODAL
+════════════════════════════════════ -->
+<div id="recruitingTemplateModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('recruitingTemplateModal');openModal('recruitingScenarioModal')">&#8592;</button>
+      <div class="modal-title" id="templateModalTitle">&#128241; Templates</div>
+    </div>
+    <div class="modal-content">
+      <div id="templateList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     LAUNCH HUD UPLINE SELECT MODAL
+════════════════════════════════════ -->
+<div id="launchHudUplineModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('launchHudUplineModal')">&#8592;</button>
+      <div class="modal-title">&#128640; Launch HUD</div>
+    </div>
+    <div class="modal-content">
+      <div style="background:linear-gradient(135deg,#003fa8,#0a84ff);border-radius:var(--radius);padding:22px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,85,196,0.65),0 2px 8px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.22);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.7);margin-bottom:10px;">&#128276; Select Your Upline</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Who is your upline?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.92);line-height:1.6;">Select your upline to open their Launch HUD in a new tab.</div>
+      </div>
+      <button class="upline-select-btn kepler" onclick="selectLaunchHudUpline('Kepler')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,159,10,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#9889;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Kepler</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">K-Launch-HUD &nbsp;&#x203A;</div>
+        </div>
+      </button>
+      <button class="upline-select-btn jonathan" onclick="selectLaunchHudUpline('Jonathan')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(48,209,88,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#128100;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Jonathan</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">J-Launch-HUD &nbsp;&#x203A;</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════════════════
      SCRIPT TOOL VIEW (iframe)
 ════════════════════════════════════ -->
@@ -705,7 +1335,7 @@ function closeModal(id){
   const m=document.getElementById(id);
   if(m)m.style.display='none';
   // only restore scroll if no other modals open
-  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal']
+  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal','recruitingUplineModal','recruitingScenarioModal','recruitingTemplateModal','launchHudUplineModal']
     .some(mid=>{const el=document.getElementById(mid);return el&&el.style.display==='block';});
   if(!anyOpen)document.body.style.overflow='';
 }
