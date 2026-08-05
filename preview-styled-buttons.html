@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Agent HUD — TDG Financial</title>
+<style>
+:root {
+  --bg:#f5f5f7; --card:#fff; --text:#1d1d1f; --text-secondary:#6e6e73;
+  --primary:#0071e3; --primary-dark:#0059b3; --success:#30d158;
+  --warning:#ff9f0a; --danger:#ff453a; --border:#d2d2d7;
+  --shadow:0 2px 12px rgba(0,0,0,0.08); --shadow-lg:0 8px 30px rgba(0,0,0,0.14);
+  --radius:16px; --radius-sm:10px; --input-bg:#f0f0f5;
+}
+[data-theme="dark"] {
+  --bg:#000; --card:#1c1c1e; --text:#f5f5f7; --text-secondary:#98989d;
+  --primary:#0a84ff; --primary-dark:#409cff; --border:#38383a;
+  --shadow:0 2px 12px rgba(0,0,0,0.35); --shadow-lg:0 8px 30px rgba(0,0,0,0.6);
+  --input-bg:#2c2c2e;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.3s,color 0.3s;}
+
+/* ── VIEWS ── */
+.view{display:none;}
+
+/* ── LOGIN ── */
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
+.login-logo{width:88px;height:88px;border-radius:24px;background:linear-gradient(135deg,#0071e3,#30d158);display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff;margin-bottom:20px;box-shadow:0 10px 30px rgba(0,113,227,0.35);}
+.login-title{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
+.login-title span{color:var(--primary);}
+.login-sub{font-size:15px;color:var(--text-secondary);margin-bottom:28px;font-weight:500;}
+.login-card{width:100%;max-width:380px;background:var(--card);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.field-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);margin-bottom:5px;}
+.text-input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--input-bg);color:var(--text);outline:none;transition:border-color 0.2s;font-family:inherit;}
+.text-input:focus{border-color:var(--primary);}
+.login-btn{width:100%;margin-top:16px;padding:15px;border-radius:var(--radius-sm);border:none;background:var(--primary);color:#fff;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s;}
+.login-btn:active{opacity:0.85;}
+.login-error{display:none;margin-top:10px;padding:10px 14px;background:rgba(255,69,58,0.1);border:1.5px solid var(--danger);border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:var(--danger);text-align:center;}
+
+/* ── DASHBOARD ── */
+.hud-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+.hud-logo{display:flex;align-items:center;gap:10px;}
+.hud-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0071e3,#30d158);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;}
+.hud-title{font-size:17px;font-weight:800;letter-spacing:-0.3px;}
+.hud-title span{color:var(--primary);}
+.hud-actions{display:flex;gap:8px;}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s;}
+.icon-btn:active{transform:scale(0.9);}
+
+.dashboard-wrap{max-width:680px;margin:0 auto;padding:20px 16px 60px;}
+.dash-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text);opacity:0.5;margin:20px 0 10px 2px;}
+
+/* HUD tiles */
+.tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.tile-grid.single{grid-template-columns:1fr;}
+.hud-tile{background:var(--card);border-radius:var(--radius);padding:20px 18px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;position:relative;overflow:hidden;}
+.hud-tile:active{transform:scale(0.97);}
+.hud-tile.primary-tile{border-color:var(--primary);background:linear-gradient(135deg,rgba(0,113,227,0.06),rgba(0,113,227,0.02));}
+.hud-tile.success-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(48,209,88,0.02));}
+.hud-tile.warning-tile{border-color:var(--warning);background:linear-gradient(135deg,rgba(255,159,10,0.06),rgba(255,159,10,0.02));}
+.hud-tile.discord-tile{border-color:#5865f2;background:linear-gradient(135deg,rgba(88,101,242,0.06),rgba(88,101,242,0.02));}
+.hud-tile.script-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(0,113,227,0.04));}
+.tile-icon{font-size:30px;margin-bottom:10px;display:block;}
+.tile-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;letter-spacing:-0.2px;}
+.tile-sub{font-size:12px;color:var(--text-secondary);font-weight:500;line-height:1.4;}
+.tile-arrow{position:absolute;top:16px;right:16px;font-size:16px;color:var(--border);}
+.tile-badge{position:absolute;top:12px;right:12px;background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:0.4px;}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);overflow-y:auto;padding:0;}
+.modal-wrap{min-height:100vh;display:flex;flex-direction:column;}
+.modal-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.modal-back{width:34px;height:34px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-back:active{transform:scale(0.9);}
+.modal-title{font-size:17px;font-weight:800;color:var(--text);}
+.modal-content{flex:1;max-width:680px;width:100%;margin:0 auto;padding:12px 14px 40px;}
+
+/* Person card */
+.person-card{background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:10px;}
+.person-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.person-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.person-name{font-size:16px;font-weight:800;color:var(--text);}
+.person-role{font-size:11px;color:var(--text-secondary);font-weight:600;margin-top:1px;}
+/* 2-column inline grid for buttons */
+.cal-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cal-btn{display:block;padding:14px 12px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--card);cursor:pointer;text-decoration:none;transition:all 0.2s;font-family:inherit;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.cal-btn:active{transform:scale(0.97);}
+.cal-btn.primary{border-color:var(--primary);background:linear-gradient(135deg,rgba(0,113,227,0.08),rgba(0,113,227,0.02));}
+.cal-btn.primary .cal-btn-label{color:var(--primary);}
+.cal-btn.primary .cal-btn-arrow{color:var(--primary);}
+.cal-btn.success{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.08),rgba(48,209,88,0.02));}
+.cal-btn.success .cal-btn-label{color:var(--success);}
+.cal-btn.success .cal-btn-arrow{color:var(--success);}
+.cal-btn.discord{border-color:#5865f2;background:linear-gradient(135deg,rgba(88,101,242,0.08),rgba(88,101,242,0.02));}
+.cal-btn.discord .cal-btn-label{color:#5865f2;}
+.cal-btn.discord .cal-btn-arrow{color:#5865f2;}
+.cal-btn.warning{border-color:var(--warning);background:linear-gradient(135deg,rgba(255,159,10,0.08),rgba(255,159,10,0.02));}
+.cal-btn.warning .cal-btn-label{color:var(--warning);}
+.cal-btn.warning .cal-btn-arrow{color:var(--warning);}
+.cal-btn.placeholder{border-color:var(--border);opacity:0.5;cursor:default;box-shadow:none;}
+.cal-btn.placeholder .cal-btn-label{color:var(--text-secondary);}
+.cal-btn-icon{font-size:24px;display:block;margin-bottom:8px;}
+.cal-btn-label{font-size:13px;font-weight:800;letter-spacing:-0.2px;display:block;margin-bottom:2px;}
+.cal-btn-detail{font-size:11px;font-weight:500;color:var(--text-secondary);display:block;line-height:1.3;}
+.cal-btn-arrow{position:absolute;top:10px;right:10px;font-size:13px;}
+
+/* Department tiles */
+.dept-tile{background:var(--card);border-radius:var(--radius);padding:20px 18px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:all 0.2s;}
+.dept-tile:active{transform:scale(0.98);}
+.dept-icon{font-size:28px;flex-shrink:0;}
+.dept-info{flex:1;}
+.dept-title{font-size:16px;font-weight:800;color:var(--text);}
+.dept-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+
+/* ── SCRIPT IFRAME VIEW ── */
+#scriptView{position:fixed;inset:0;display:flex;flex-direction:column;z-index:40;}
+.iframe-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.iframe-back{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.iframe-back:active{transform:scale(0.97);}
+.iframe-title{font-size:15px;font-weight:800;color:var(--text);flex:1;text-align:center;}
+.script-iframe{flex:1;min-height:0;width:100%;border:none;background:var(--bg);}
+
+/* Theme btn (fixed) */
+.theme-fixed{position:fixed;top:16px;right:16px;z-index:200;width:36px;height:36px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);}
+
+/* ── RECRUITING TEMPLATES ── */
+.template-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.template-step-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.copy-btn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--primary);background:rgba(0,113,227,0.08);color:var(--primary);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;}
+.copy-btn:active{transform:scale(0.95);}
+.copy-btn.copied{border-color:var(--success);background:rgba(48,209,88,0.1);color:var(--success);}
+.template-text{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+.upline-select-btn{width:100%;background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.upline-select-btn:active{transform:scale(0.97);}
+.upline-select-btn.kepler{border-color:rgba(255,159,10,0.9);background:#fff;box-shadow:0 4px 20px rgba(255,159,10,0.25);}
+.upline-select-btn.jonathan{border-color:rgba(48,209,88,0.9);background:#fff;box-shadow:0 4px 20px rgba(48,209,88,0.25);}
+
+@media(max-width:380px){
+  .tile-grid{grid-template-columns:1fr;}
+  .tile-icon{font-size:26px;}
+}
+</style>
+</head>
+<body>
+<script>
+// Force login on every load
+document.addEventListener('DOMContentLoaded',function(){
+  show('loginView');
+  var u=document.getElementById('loginUser');
+  if(u)u.focus();
+});
+
+// ─── RECRUITING OUTREACH ──────────────────────────────────────────────────────
+var recruitUpline = null;
+var currentTemplates = [];
+
+function selectLaunchHudUpline(name) {
+  var url = name === 'Kepler'
+    ? 'https://trepin3.github.io/K-Launch-HUD/'
+    : 'https://trepin3.github.io/J-Launch-HUD/';
+  closeModal('launchHudUplineModal');
+  window.open(url, '_blank');
+}
+
+function selectUpline(name) {
+  var hudLink = name === 'Kepler'
+    ? 'https://trepin3.github.io/K-Launch-HUD/'
+    : 'https://trepin3.github.io/J-Launch-HUD/';
+  recruitUpline = {name: name, hudLink: hudLink};
+  closeModal('recruitingUplineModal');
+  document.getElementById('scenarioModalTitle').textContent = '\u{1F4F1} ' + name + ' — Select Scenario';
+  openModal('recruitingScenarioModal');
+}
+
+function selectScenario(key) {
+  closeModal('recruitingScenarioModal');
+  renderTemplates(key);
+  openModal('recruitingTemplateModal');
+}
+
+function renderTemplates(key) {
+  var scenario = RECRUITING_TEMPLATES[key];
+  var uplineName = recruitUpline.name;
+  var hudLink = recruitUpline.hudLink;
+  currentTemplates = scenario.steps.map(function(step) {
+    return step.text
+      .replace(/\{\{upline_name\}\}/g, uplineName)
+      .replace(/\{\{launch_hud_link\}\}/g, hudLink);
+  });
+  document.getElementById('templateModalTitle').textContent = scenario.title;
+  var html = '';
+  scenario.steps.forEach(function(step, idx) {
+    var text = currentTemplates[idx];
+    var escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html += '<div class="template-card">' +
+      '<div class="template-step-label"><span>' + step.label + '</span>' +
+      '<button class="copy-btn" onclick="copyTemplate(' + idx + ')">Copy</button></div>' +
+      '<div class="template-text">' + escaped + '</div>' +
+      '</div>';
+  });
+  document.getElementById('templateList').innerHTML = html;
+}
+
+function copyTemplate(idx) {
+  var text = currentTemplates[idx];
+  var btns = document.querySelectorAll('#templateList .copy-btn');
+  var btn = btns[idx];
+  function markCopied() {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(function() { fallbackCopy(text, markCopied); });
+  } else {
+    fallbackCopy(text, markCopied);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  if (cb) cb();
+}
+
+var RECRUITING_TEMPLATES = {
+
+  warm_licensed: {
+    title: 'Warm Market — Licensed Agent',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, I was thinking about you today and wanted to ask you something.
+
+Are you still happy with where you're building your insurance business?`},
+      {label: 'Discovery', text: `That's good to know.
+
+I'm curious...
+
+If you could change one thing about your business right now, what would it be?
+
+More support?
+
+Better leads?
+
+Better training?
+
+Better technology?
+
+More freedom?
+
+Higher income?`},
+      {label: 'Invite Them', text: `The reason I asked is because we've been building something that's pretty different from what I've seen in the industry.
+
+As we were putting everything together, you were honestly one of the people that came to mind.
+
+I thought it might be something you'd appreciate.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take about 10 minutes whenever you have some free time and click through it.
+
+When you're finished, there's a link inside to schedule a conversation with {{upline_name}}.
+
+No pressure at all.
+
+I just think it's worth seeing before you decide whether it's something you'd want to be part of.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Just curious...
+
+Did anything in the Launch HUD stand out to you?`},
+      {label: 'Follow Up 2', text: `I've been wondering what you thought after looking through everything.
+
+Anything surprise you?`},
+      {label: 'Follow Up 3', text: `I know life gets busy, so I just wanted to check in one last time.
+
+If you think it might be a fit, I'd definitely recommend scheduling some time with {{upline_name}}.
+
+Even if it's just to ask questions, I think you'll enjoy the conversation.`}
+    ]
+  },
+
+  warm_close_friend: {
+    title: 'Warm Market — Licensed Close Friend',
+    steps: [
+      {label: 'Initial Text', text: `Hey, let me ask you something.
+
+If you were starting your insurance business over today, knowing everything you know now, would you build it the same way?`},
+      {label: 'Continue', text: `That's honestly why I reached out.
+
+We've been putting together something that I wish existed years ago.
+
+You've always been someone I respect, so I figured I'd send it your way before I shared it with a bunch of other people.
+
+Think you'd be willing to check it out?`},
+      {label: 'Send Launch HUD', text: `Perfect.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take a few minutes and click through it.
+
+If you like what you see, there's a link inside where you can schedule some time with {{upline_name}} to ask questions and see if it makes sense for you.
+
+I'd really like to hear what you think.`}
+    ]
+  },
+
+  warm_unlicensed: {
+    title: 'Warm Market — Unlicensed Friend',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, random question.
+
+Have you ever thought about getting into the insurance or financial industry?`},
+      {label: 'If Yes', text: `Really?
+
+What got you interested?`},
+      {label: 'If No', text: `No worries.
+
+Can I ask what you're doing for work these days?
+
+How are you liking it?`},
+      {label: 'Discovery', text: `The reason I'm asking is because we've been helping people build businesses in this industry, even if they've never sold insurance before.
+
+When I was thinking about who might actually benefit from it, your name came to mind.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Spend about 10 minutes going through it whenever you get a chance.
+
+If it looks interesting, there's a link inside where you can schedule a conversation with {{upline_name}}.
+
+They'll answer your questions and explain what getting started would actually look like.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Were you able to take a look yet?
+
+I'm curious what your first impression was.`},
+      {label: 'Follow Up 2', text: `No rush at all.
+
+I just wanted to see if anything caught your attention or if you had any questions after looking through it.`},
+      {label: 'Follow Up 3', text: `I wanted to reach out one last time.
+
+Whether it's a fit or not, I'd still love to hear what you thought.
+
+If you're interested, I'd definitely recommend scheduling some time with {{upline_name}}.`}
+    ]
+  },
+
+  cold_licensed: {
+    title: 'Cold Market — Licensed Agent',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, this is {{agent_name}}.
+
+It was great meeting you today.
+
+I enjoyed our conversation and wanted to stay in touch.
+
+You mentioned you've been in the insurance industry, so I wanted to ask...
+
+How are things going for you these days?`},
+      {label: 'Discovery', text: `That's awesome.
+
+I'm curious...
+
+If you could improve one thing about your business, what would it be?`},
+      {label: 'Invite Them', text: `The reason I ask is because I've been working with a group that's built some really solid systems for agents who want to grow their business.
+
+As we were talking earlier, I thought it might be something you'd appreciate.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Spend about 10 minutes going through it whenever you have some time.
+
+When you're finished, you'll see a link inside where you can schedule a conversation with {{upline_name}}.
+
+I'd love to hear what you think after you've had a chance to look through everything.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Just wanted to check in.
+
+Were you able to look through the Launch HUD?
+
+I'm curious what stood out to you.`},
+      {label: 'Follow Up 2', text: `Hope your week's going well.
+
+Did anything catch your attention, or do you have any questions before connecting with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `Just wanted to follow up one last time.
+
+If you're still interested in seeing another way to build an agency, I'd definitely recommend scheduling some time with {{upline_name}}.
+
+I think it'll be worth the conversation.`}
+    ]
+  },
+
+  cold_unlicensed: {
+    title: 'Cold Market — Unlicensed Prospect',
+    steps: [
+      {label: 'Initial Text', text: `Hey {{first_name}}, this is {{agent_name}}.
+
+It was great meeting you today.
+
+I really enjoyed our conversation and wanted to stay in touch.
+
+Can I ask you something?`},
+      {label: 'Continue', text: `Have you ever thought about building a business in the financial or insurance industry?`},
+      {label: 'If Yes', text: `Very cool.
+
+What got you interested?`},
+      {label: 'If No', text: `No worries.
+
+What do you do for work these days?
+
+Do you enjoy it?`},
+      {label: 'Discovery', text: `If you had the chance to build something with more flexibility, more income potential, and people helping you every step of the way, would you be interested in learning more?`},
+      {label: 'Invite Them', text: `That's exactly why I wanted to reach back out.
+
+We've been helping people build businesses in this industry, even if they've never been licensed before.
+
+Instead of trying to explain everything over text, we've put together a Launch HUD that walks through how everything works.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take about 10 minutes to look through it.
+
+When you're finished, you'll find a link inside where you can schedule a conversation with {{upline_name}}.
+
+You'll be able to ask questions, learn more about the opportunity, and decide if it's something you'd like to pursue.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Were you able to check out the Launch HUD?
+
+I'd love to hear what your first impression was.`},
+      {label: 'Follow Up 2', text: `Just wanted to check back in.
+
+Did anything stand out to you, or is there anything you'd like to ask before talking with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `I know life gets busy, so I wanted to reach out one last time.
+
+If you're still interested in learning more, I'd definitely recommend scheduling a conversation with {{upline_name}} through the Launch HUD.
+
+No pressure at all.
+
+I just wanted to make sure you had the opportunity.`}
+    ]
+  },
+
+  social_licensed: {
+    title: 'Social Media DM — Licensed Agent',
+    steps: [
+      {label: 'Initial DM', text: `Hey {{first_name}},
+
+I came across your profile and noticed you're in the insurance industry.
+
+I like connecting with other agents, so I figured I'd introduce myself.
+
+How long have you been in the business?`},
+      {label: 'If They Respond', text: `Very nice.
+
+What part of the business do you enjoy the most?`},
+      {label: 'Discovery', text: `I'm always interested in hearing how other agents are building their business.
+
+If you could improve one thing about where you're at today, what would it be?`},
+      {label: 'Invite Them', text: `The reason I ask is because our team has been building some systems that have really helped agents grow.
+
+As we were talking, I thought you might find it interesting.
+
+Would you be open to taking a quick look?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Spend about 10 minutes clicking through it whenever you have time.
+
+When you're finished, there's a link inside where you can schedule a conversation with {{upline_name}}.
+
+I'd love to hear what you think after you've looked through it.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Just wanted to see if you had a chance to look through the Launch HUD.
+
+I'm curious what stood out to you.`},
+      {label: 'Follow Up 2', text: `Just checking back in.
+
+Did anything catch your attention, or do you have any questions before talking with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `Wanted to follow up one last time.
+
+If you're still open to seeing another way of building your business, I'd definitely recommend scheduling some time with {{upline_name}}.
+
+I think it'll be worth the conversation.`}
+    ]
+  },
+
+  social_unlicensed: {
+    title: 'Social Media DM — Unlicensed Prospect',
+    steps: [
+      {label: 'Initial DM', text: `Hey {{first_name}},
+
+I came across your profile and wanted to introduce myself.
+
+I enjoy connecting with people who are motivated and building their careers.
+
+Can I ask you a quick question?`},
+      {label: 'Continue', text: `Have you ever considered building a business in the financial or insurance industry?`},
+      {label: 'If Yes', text: `Very cool.
+
+What got you interested?`},
+      {label: 'If No', text: `No worries.
+
+What do you do for work these days?
+
+Do you enjoy it?`},
+      {label: 'Discovery', text: `If you had the opportunity to build something with more flexibility, uncapped income potential, and a team helping you every step of the way, would you be interested in learning more?`},
+      {label: 'Invite Them', text: `That's actually why I reached out.
+
+We've been helping people build businesses in this industry, even if they've never worked in insurance before.
+
+Instead of trying to explain everything over messages, we've put together a Launch HUD that walks through the business and how we help people get started.
+
+Would you be open to checking it out?`},
+      {label: 'Send Launch HUD', text: `Awesome.
+
+Here's the Launch HUD.
+
+{{launch_hud_link}}
+
+Take about 10 minutes to look through everything.
+
+When you're finished, you'll find a link inside where you can schedule a conversation with {{upline_name}}.
+
+That gives you the opportunity to ask questions and decide whether it's something you'd like to pursue.`},
+      {label: 'Follow Up 1', text: `Hey {{first_name}},
+
+Were you able to check out the Launch HUD?
+
+I'd love to hear your first impression.`},
+      {label: 'Follow Up 2', text: `Just checking back in.
+
+Did anything stand out to you, or do you have any questions before connecting with {{upline_name}}?`},
+      {label: 'Follow Up 3', text: `Wanted to reach out one last time.
+
+If you're still curious about building something for yourself, I'd definitely recommend taking a look at the Launch HUD and scheduling a conversation with {{upline_name}}.
+
+No pressure at all.
+
+I just wanted to make sure you had the opportunity.`}
+    ]
+  }
+
+};
+
+</script>
+
+<!-- ── THEME BTN (login screen only) ── -->
+
+<!-- ════════════════════════════════════
+     LOGIN VIEW
+════════════════════════════════════ -->
+<div id="loginView" class="view">
+  <div class="login-wrap">
+    <div class="login-logo">🛡️</div>
+    <div class="login-title">Agent <span>HUD</span></div>
+    <div class="login-card">
+      <div style="margin-bottom:10px;">
+        <label class="field-label">Username</label>
+        <input class="text-input" id="loginUser" placeholder="Enter username" autocomplete="off"
+          onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+      </div>
+      <div>
+        <label class="field-label">Password</label>
+        <input class="text-input" type="password" id="loginPass" placeholder="Enter password"
+          onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-error" id="loginError">Incorrect username or password.</div>
+      <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     DASHBOARD VIEW
+════════════════════════════════════ -->
+<div id="dashView" class="view">
+  <div class="hud-header">
+    <div class="hud-logo">
+      <div class="hud-logo-icon">🛡️</div>
+      <div class="hud-title">Agent <span>HUD</span></div>
+    </div>
+    <div class="hud-actions">
+      <button class="icon-btn" onclick="toggleTheme()" id="dashThemeBtn">🌙</button>
+      <button class="icon-btn" onclick="doLogout()" title="Sign out">🚪</button>
+    </div>
+  </div>
+
+  <div class="dashboard-wrap">
+
+    <div class="dash-section-label">Operations</div>
+    <div class="tile-grid">
+      <a class="hud-tile primary-tile" href="https://arc.naaleads.com/home" target="_blank" rel="noopener">
+        <span class="tile-icon">🏢</span>
+        <div class="tile-title">Backoffice</div>
+        <div class="tile-sub">NAA Leads Portal</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+      <a class="hud-tile warning-tile" href="https://thealliancecontracting.com/requests" target="_blank" rel="noopener">
+        <span class="tile-icon">📄</span>
+        <div class="tile-title">Carrier Contracts</div>
+        <div class="tile-sub">The Alliance Contracting</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="dash-section-label">Sales Tools</div>
+    <div class="tile-grid">
+      <a class="hud-tile success-tile" href="https://www.landing.insurancetoolkits.com/" target="_blank" rel="noopener">
+        <span class="tile-icon">📊</span>
+        <div class="tile-title">Quote Tools</div>
+        <div class="tile-sub">Insurance Toolkits</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+      <div class="hud-tile script-tile" onclick="openScriptTool()">
+        <span class="tile-icon">📋</span>
+        <div class="tile-title">Script Tool</div>
+        <div class="tile-sub">The Basics FE Script</div>
+        <span class="tile-arrow">▶</span>
+      </div>
+    </div>
+
+    <div class="dash-section-label">Business Retention Tools</div>
+    <div class="tile-grid single">
+      <div class="hud-tile warning-tile" onclick="openModal('policyLocatorModal')">
+        <span class="tile-icon">&#128269;</span>
+        <div class="tile-title">Deceased Policy Locator</div>
+        <div class="tile-sub">NAIC lookup &mdash; give it to every client</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+    </div>
+
+    <div class="dash-section-label">Community & Support</div>
+    <div class="tile-grid">
+      <a class="hud-tile discord-tile" href="https://discord.gg/5MPv2PXgY" target="_blank" rel="noopener">
+        <span class="tile-icon">💬</span>
+        <div class="tile-title">TDG Discord</div>
+        <div class="tile-sub">Community Channel</div>
+        <span class="tile-arrow">↗</span>
+      </a>
+      <div class="hud-tile primary-tile" onclick="openModal('supportModal')">
+        <span class="tile-icon">🎧</span>
+        <div class="tile-title">Progression & Support</div>
+        <div class="tile-sub">Business growth & team support</div>
+        <span class="tile-arrow">›</span>
+      </div>
+    </div>
+    <div class="dash-section-label">Builder Tools</div>
+    <div class="tile-grid">
+      <div class="hud-tile primary-tile" onclick="openModal('recruitingUplineModal')">
+        <span class="tile-icon">📱</span>
+        <div class="tile-title">Recruiting Outreach</div>
+        <div class="tile-sub">Text message templates by market &amp; scenario</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+      <div class="hud-tile success-tile" onclick="openModal('launchHudUplineModal')">
+        <span class="tile-icon">&#128640;</span>
+        <div class="tile-title">Launch HUD</div>
+        <div class="tile-sub">Share to jumpstart others journeys</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+    </div>
+
+    <div class="dash-section-label">Agent Development</div>
+    <div class="tile-grid">
+      <a class="hud-tile success-tile" href="https://agentacademy.thinkific.com/courses/remote-agent-training" target="_blank" rel="noopener">
+        <span class="tile-icon">&#127891;</span>
+        <div class="tile-title">Agent Academy</div>
+        <div class="tile-sub">Remote agent training</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </a>
+      <a class="hud-tile primary-tile" href="https://hub.app.nipr.com/my-nipr/frontend/identify-licensee" target="_blank" rel="noopener">
+        <span class="tile-icon">&#127380;</span>
+        <div class="tile-title">Get NPN &amp; Licenses</div>
+        <div class="tile-sub">NIPR licensee lookup</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SUPPORT MODAL
+════════════════════════════════════ -->
+<div id="supportModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header" style="background:var(--card);">
+      <button class="modal-back" onclick="closeModal('supportModal')">←</button>
+      <div class="modal-title">🎧 Progression & Support</div>
+    </div>
+    <div class="modal-content">
+      <div class="dash-section-label">Refer an Agent</div>
+
+      <div class="dept-tile" onclick="openModal('referralModal')" style="background:linear-gradient(135deg,#0055c4,#1a7a3e);border-color:transparent;box-shadow:0 6px 20px rgba(0,60,160,0.45);position:relative;overflow:hidden;">
+        <div class="dept-icon">🤝</div>
+        <div class="dept-info">
+          <div class="dept-title" style="color:#fff;">Agent Discovery Call</div>
+          <div class="dept-sub" style="color:#fff;font-weight:700;font-size:13px;">Refer agents &amp; build your team to unlock:</div>
+          <div style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 11px;border-radius:20px;background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.45);font-size:11px;font-weight:800;color:#fff;letter-spacing:0.3px;">🏆 Agency Manager Contract</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:rgba(255,255,255,0.9);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+
+      <div class="dash-section-label">Select Department</div>
+
+      <div class="dept-tile" onclick="openModal('onboardingModal')">
+        <div class="dept-icon">🚀</div>
+        <div class="dept-info">
+          <div class="dept-title">Onboarding Support Staff</div>
+          <div class="dept-sub">Getting started, licensing, setup</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+
+      <div class="dept-tile" onclick="openModal('coachingModal')">
+        <div class="dept-icon">📈</div>
+        <div class="dept-info">
+          <div class="dept-title">Coaching & Business Development</div>
+          <div class="dept-sub">Sales coaching, growth strategy</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+
+      <div class="dept-tile" onclick="openModal('pksModal')">
+        <div class="dept-icon">📚</div>
+        <div class="dept-info">
+          <div class="dept-title">Product Knowledge Support</div>
+          <div class="dept-sub">Carrier questions, product training</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+
+      <div class="dash-section-label">Rent A Closer</div>
+
+      <div class="dept-tile" onclick="openModal('iulModal')">
+        <div class="dept-icon">💰</div>
+        <div class="dept-info">
+          <div class="dept-title">IUL</div>
+          <div class="dept-sub">Indexed Universal Life specialist</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+
+      <div class="dept-tile" onclick="openModal('estatePlanningModal')">
+        <div class="dept-icon">📜</div>
+        <div class="dept-info">
+          <div class="dept-title">Estate Planning</div>
+          <div class="dept-sub">Will, trust &amp; annuity solutions</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text-secondary);flex-shrink:0;"><span style="font-size:9px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Tap</span><span style="font-size:20px;line-height:1;">›</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     REFERRAL DISCOVERY MODAL
+════════════════════════════════════ -->
+<div id="referralModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('referralModal');openModal('supportModal')">←</button>
+      <div class="modal-title">🤝 Agent Discovery Call</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#c47d00,#e8940a);border:none;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(196,125,0,0.4);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="font-size:26px;">⚡</span>
+          <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Two Steps to Get Credit for Your Referral</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <span style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(0,0,0,0.2);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">1</span>
+            <div style="font-size:15px;color:#fff;line-height:1.45;"><strong>Book using your recruit's info</strong> — you set it up, they attend. Use your upline's calendar below.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <span style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(0,0,0,0.2);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">2</span>
+            <div style="font-size:15px;color:#fff;line-height:1.45;"><strong>Message your upline on Discord</strong> to let them know about the call — this helps them better prepare for your referral and makes sure you get credit.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(255,159,10,0.12);">⚡</div>
+          <div>
+            <div class="person-name">Kepler</div>
+            <div class="person-role">Onboarding Staff</div>
+          </div>
+        </div>
+        <div class="cal-btn-grid">
+          <a class="cal-btn primary" href="https://calendar.app.google/mgn8DWW8wLEwapwv5" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">📅</span>
+            <div class="cal-btn-label">Book with Kepler</div>
+            <div class="cal-btn-detail">Schedule a discovery call</div>
+          </a>
+          <a class="cal-btn discord" href="https://discord.com/users/keplerwolsey_38219" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">💬</span>
+            <div class="cal-btn-label">Message on Discord</div>
+            <div class="cal-btn-detail">Direct message Kepler</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(48,209,88,0.12);">👤</div>
+          <div>
+            <div class="person-name">Jonathan</div>
+            <div class="person-role">Onboarding Specialist</div>
+          </div>
+        </div>
+        <div class="cal-btn-grid">
+          <a class="cal-btn primary" href="https://calendar.app.google/7tv1sr261Dj3DK1W7" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">📅</span>
+            <div class="cal-btn-label">Book with Jonathan</div>
+            <div class="cal-btn-detail">Schedule a discovery call</div>
+          </a>
+          <a class="cal-btn discord" href="https://discord.com/users/jonathanmichel_60270" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">💬</span>
+            <div class="cal-btn-label">Message on Discord</div>
+            <div class="cal-btn-detail">Direct message Jonathan</div>
+          </a>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ONBOARDING MODAL
+════════════════════════════════════ -->
+<div id="onboardingModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('onboardingModal');openModal('supportModal')">←</button>
+      <div class="modal-title">🚀 Onboarding Staff</div>
+    </div>
+    <div class="modal-content">
+
+      <!-- STEP 1: ONBOARDING CLASS -->
+      <div style="background:linear-gradient(135deg,#1a7a3e,#30d158);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(26,122,62,0.45);">
+        <div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.25);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;">⭐ Step 1</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">🎓</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Book Your Onboarding Class</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Haven't booked yours yet? This is where to start.</div>
+          </div>
+        </div>
+        <a href="https://link.dashlypro.com/widget/booking/vT45fRpeS1W8Wv7WSyZs" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.4);color:#fff;font-size:14px;font-weight:800;text-decoration:none;">
+          📅 Book Now &nbsp;↗
+        </a>
+      </div>
+
+      <!-- CHANDLER DAVIES -->
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(0,113,227,0.12);">👤</div>
+          <div>
+            <div class="person-name">Chandler Davies</div>
+            <div class="person-role">Onboarding Specialist</div>
+          </div>
+        </div>
+        <div class="cal-btn-grid">
+          <a class="cal-btn primary" href="https://link.dashlypro.com/widget/booking/nwNmTjnQSk5W9enz8DS2" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">📅</span>
+            <div class="cal-btn-label">Agent Support</div>
+            <div class="cal-btn-detail">Book a support session</div>
+          </a>
+          <a class="cal-btn discord" href="https://discord.com/users/chandler_davies" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">💬</span>
+            <div class="cal-btn-label">Message on Discord</div>
+            <div class="cal-btn-detail">Direct message Chandler</div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     COACHING MODAL (Josh Owens)
+════════════════════════════════════ -->
+<div id="coachingModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('coachingModal');openModal('supportModal')">←</button>
+      <div class="modal-title">📈 Coaching & Business Development</div>
+    </div>
+    <div class="modal-content">
+
+      <!-- STEP 2: BUSINESS DEVELOPMENT CALL -->
+      <div style="background:linear-gradient(135deg,#0055c4,#0a84ff);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,85,196,0.45);">
+        <div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.25);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;">⭐ Step 2</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">📈</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Get your CRM access &amp; leadflow turned on.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Book Your Business Development Call</div>
+          </div>
+        </div>
+        <a href="https://link.dashlypro.com/widget/booking/AvVE2vXmRJX53jjd45w3?sessionId=211d36dc-5d4f-448f-857f-73502f4016a5&trigger_link=4IPKsjvDFLdY8RucQkeD" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.4);color:#fff;font-size:14px;font-weight:800;text-decoration:none;">
+          📅 Book Now &nbsp;↗
+        </a>
+      </div>
+
+      <!-- STEP 3: COACHING -->
+      <div style="background:linear-gradient(135deg,#5c2fc2,#7c4dff);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(92,47,194,0.45);">
+        <div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.25);font-size:10px;font-weight:800;color:#fff;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;">⭐ Step 3</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">🎯</span>
+          <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Get Coached to Convert More</div>
+        </div>
+        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>DM or call Josh on Discord</strong> with the lead's name any time you do a sales presentation that doesn't close — he'll review the call and coach you on how to convert.</div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(48,209,88,0.12);">🏆</div>
+          <div>
+            <div class="person-name">Josh Owens</div>
+            <div class="person-role">Coaching & Business Development</div>
+          </div>
+        </div>
+        <a href="https://discord.com/users/joshowens16" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(88,101,242,0.08);border:1.5px solid #5865f2;color:#5865f2;font-size:14px;font-weight:800;text-decoration:none;">
+          💬 DM or Call on Discord &nbsp;↗
+        </a>
+      </div>
+
+      <!-- AGENT LEVELS CHART -->
+      <div class="person-card" style="margin-top:2px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:28px;">📊</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:var(--text);">Contract Levels Chart</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">See the requirements to unlock higher contracts</div>
+          </div>
+        </div>
+        <a href="https://a02a41c004c75ffe8d91-b19a28bfebdacc37eb56f25bc81c2f2f.ssl.cf1.rackcdn.com/documents/arcnaaleads/header/Agent%20Levels%20Chart%20v2023-05-01%201307%20p1_2.pdf" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(0,113,227,0.08);border:1.5px solid var(--primary);color:var(--primary);font-size:14px;font-weight:800;text-decoration:none;">
+          📄 View Chart &nbsp;↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PRODUCT KNOWLEDGE MODAL (Josh Owens)
+════════════════════════════════════ -->
+<div id="pksModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('pksModal');openModal('supportModal')">←</button>
+      <div class="modal-title">📚 Product Knowledge Support</div>
+    </div>
+    <div class="modal-content">
+
+      <!-- HOW TO USE PRODUCT KNOWLEDGE SUPPORT -->
+      <div style="background:linear-gradient(135deg,#0a7a8e,#00b4d8);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(10,122,142,0.45);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">📚</span>
+          <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">How to Use Product Knowledge Support</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <span style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(0,0,0,0.2);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">1</span>
+            <div style="font-size:15px;color:#fff;line-height:1.45;"><strong>DM or call Josh on Discord</strong> for quick advice on finding the right coverage for your clients.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <span style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(0,0,0,0.2);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">2</span>
+            <div style="font-size:15px;color:#fff;line-height:1.45;"><strong>Book a session</strong> below for more complicated cases that need a deeper dive.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <span style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(0,0,0,0.2);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">3</span>
+            <div style="font-size:15px;color:#fff;line-height:1.45;"><strong>Call Josh on Discord</strong> to speak with your client real time to help button up business when needed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(48,209,88,0.12);">🏆</div>
+          <div>
+            <div class="person-name">Josh Owens</div>
+            <div class="person-role">Product Knowledge Support</div>
+          </div>
+        </div>
+        <div class="cal-btn-grid">
+          <a class="cal-btn primary" href="https://link.dashlypro.com/widget/booking/AvVE2vXmRJX53jjd45w3?sessionId=211d36dc-5d4f-448f-857f-73502f4016a5&trigger_link=4IPKsjvDFLdY8RucQkeD" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">📅</span>
+            <div class="cal-btn-label">Book a Session</div>
+            <div class="cal-btn-detail">Schedule time with Josh</div>
+          </a>
+          <a class="cal-btn discord" href="https://discord.com/users/joshowens16" target="_blank" rel="noopener">
+            <span class="cal-btn-arrow">↗</span>
+            <span class="cal-btn-icon">💬</span>
+            <div class="cal-btn-label">DM or Call on Discord</div>
+            <div class="cal-btn-detail">Message or call Josh</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- CARRIER PAYOUT CHART -->
+      <div class="person-card" style="margin-top:2px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:28px;">💰</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:var(--text);">Top Carrier Payout Chart</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">View top carrier commission rates & payout breakdown</div>
+          </div>
+        </div>
+        <a href="https://a02a41c004c75ffe8d91-b19a28bfebdacc37eb56f25bc81c2f2f.ssl.cf1.rackcdn.com/documents/arcnaaleads/header/PayoutGrid_20260414.pdf" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(0,122,68,0.08);border:1.5px solid var(--success);color:var(--success);font-size:14px;font-weight:800;text-decoration:none;">
+          📄 View Payout Chart &nbsp;↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     IUL MODAL (Gina Hawks)
+════════════════════════════════════ -->
+<div id="iulModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('iulModal');openModal('supportModal')">←</button>
+      <div class="modal-title">💰 IUL</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#b06000,#e8920a);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(176,96,0,0.45);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">⭐</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Gina Hawks — IMO's #1 IUL Closer</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Indexed Universal Life specialist</div>
+          </div>
+        </div>
+        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>Her calendar is first come, first served</strong> and there is typically a wait — set your client's expectations accordingly before booking.</div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(176,96,0,0.12);">⭐</div>
+          <div>
+            <div class="person-name">Gina Hawks</div>
+            <div class="person-role">IUL Specialist — Integrity Marketing</div>
+          </div>
+        </div>
+        <a href="https://bookings.cloud.microsoft/book/GinaHawksIULAppointmentsCalendar@integritymarketing.com/?ismsaljsauthenabled=true" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(176,96,0,0.08);border:1.5px solid #e8920a;color:#b06000;font-size:14px;font-weight:800;text-decoration:none;">
+          📅 Book with Gina &nbsp;↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ESTATE PLANNING MODAL (Christopher Norris)
+════════════════════════════════════ -->
+<div id="estatePlanningModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('estatePlanningModal');openModal('supportModal')">←</button>
+      <div class="modal-title">📜 Estate Planning</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#1a3a5c,#2c6096);border:none;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(26,58,92,0.5);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:32px;">📜</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:-0.2px;">Christopher Norris IAS — Estate Planning</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:3px;">Will, trust &amp; annuity solutions</div>
+          </div>
+        </div>
+        <div style="font-size:15px;color:#fff;line-height:1.5;"><strong>Christopher Norris IAS</strong> helps your clients get their will and trust in order — and in doing so, he professionally sets you up to come back in and write the Annuity. A seamless handoff that serves your client and grows your business.</div>
+      </div>
+
+      <div class="person-card">
+        <div class="person-header">
+          <div class="person-avatar" style="background:rgba(26,58,92,0.12);">📜</div>
+          <div>
+            <div class="person-name">Christopher Norris IAS</div>
+            <div class="person-role">Estate Planning — Integrity Wealth Solutions</div>
+          </div>
+        </div>
+        <a href="https://bookings.cloud.microsoft/book/ChristopherNorrisIAS@IntegrityWealthSolutions.com/?ismsaljsauthenabled" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:10px;background:rgba(26,58,92,0.08);border:1.5px solid #2c6096;color:#1a3a5c;font-size:14px;font-weight:800;text-decoration:none;">
+          📅 Book with Christopher &nbsp;↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     DECEASED POLICY LOCATOR MODAL
+════════════════════════════════════ -->
+<div id="policyLocatorModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('policyLocatorModal')">&#8592;</button>
+      <div class="modal-title">&#128269; Deceased Policy Locator</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#a35c00,#ff9f0a);border:none;border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:0 8px 32px rgba(163,92,0,0.55),0 2px 8px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.22);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.75);margin-bottom:10px;">&#128200; Retention &amp; Referral Tool</div>
+        <div style="font-size:19px;font-weight:800;color:#fff;margin-bottom:8px;">Give this to every client.</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.95);line-height:1.55;margin-bottom:12px;">Free NAIC service that helps families find life insurance left by a loved one.</div>
+        <div style="font-size:15.5px;font-weight:800;color:#fff;line-height:1.5;padding-top:12px;border-top:1px solid rgba(255,255,255,0.28);">Giving it away builds trust, holds persistency, and opens referrals.</div>
+      </div>
+
+      <div class="person-card">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:var(--warning);margin-bottom:6px;">&#128172; Ask Every Client</div>
+        <div style="font-size:17px;font-weight:800;color:var(--text);line-height:1.45;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">"Anyone in the family missing a policy from a parent or grandparent?"</div>
+
+        <div style="font-size:15.5px;color:var(--text);line-height:1.75;margin-bottom:18px;">
+          &bull;&nbsp; Share at delivery &mdash; and again at every annual review.<br>
+          &bull;&nbsp; Get it to the beneficiaries too. New names in your book.<br>
+          &bull;&nbsp; <strong>Set expectations:</strong> insurers reply to the beneficiary only, and it takes weeks.
+        </div>
+        <a href="https://eapps.naic.org/life-policy-locator/#/welcome" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:10px;background:rgba(255,159,10,0.08);border:1.5px solid var(--warning);color:#a35c00;font-size:16px;font-weight:800;text-decoration:none;">
+          &#128269; Open NAIC Policy Locator &nbsp;&#x2197;
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RECRUITING UPLINE SELECT MODAL
+════════════════════════════════════ -->
+<div id="recruitingUplineModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('recruitingUplineModal')">&#8592;</button>
+      <div class="modal-title">&#128241; Recruiting Outreach</div>
+    </div>
+    <div class="modal-content">
+      <div style="background:linear-gradient(135deg,#003fa8,#0a84ff);border-radius:var(--radius);padding:22px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,85,196,0.65),0 2px 8px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.22);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.7);margin-bottom:10px;">&#128276; Read Before Selecting</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Who is your upline?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.92);line-height:1.6;">Select your upline to automatically load the correct Launch HUD link into every text template below.</div>
+      </div>
+      <button class="upline-select-btn kepler" onclick="selectUpline('Kepler')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,159,10,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#9889;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Kepler</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">Onboarding Staff &nbsp;&#x203A;</div>
+        </div>
+      </button>
+      <button class="upline-select-btn jonathan" onclick="selectUpline('Jonathan')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(48,209,88,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#128100;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Jonathan</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">Onboarding Specialist &nbsp;&#x203A;</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RECRUITING SCENARIO SELECT MODAL
+════════════════════════════════════ -->
+<div id="recruitingScenarioModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('recruitingScenarioModal');openModal('recruitingUplineModal')">&#8592;</button>
+      <div class="modal-title" id="scenarioModalTitle">&#128241; Select Scenario</div>
+    </div>
+    <div class="modal-content">
+
+      <div class="dash-section-label">Warm Market</div>
+
+      <div class="dept-tile" onclick="selectScenario('warm_licensed')">
+        <div class="dept-icon">&#129309;</div>
+        <div class="dept-info">
+          <div class="dept-title">Licensed Agent</div>
+          <div class="dept-sub">Already in the industry, open to a better opportunity</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('warm_close_friend')">
+        <div class="dept-icon">&#127775;</div>
+        <div class="dept-info">
+          <div class="dept-title">Licensed Close Friend</div>
+          <div class="dept-sub">Someone you know well who is already licensed</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('warm_unlicensed')">
+        <div class="dept-icon">&#127919;</div>
+        <div class="dept-info">
+          <div class="dept-title">Unlicensed Friend</div>
+          <div class="dept-sub">Someone in your warm market not yet in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dash-section-label">Cold Market</div>
+
+      <div class="dept-tile" onclick="selectScenario('cold_licensed')">
+        <div class="dept-icon">&#128083;</div>
+        <div class="dept-info">
+          <div class="dept-title">Licensed Agent</div>
+          <div class="dept-sub">Met in person, already licensed, open to conversation</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('cold_unlicensed')">
+        <div class="dept-icon">&#128100;</div>
+        <div class="dept-info">
+          <div class="dept-title">Unlicensed Prospect</div>
+          <div class="dept-sub">Met in person, not yet in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dash-section-label">Social Media</div>
+
+      <div class="dept-tile" onclick="selectScenario('social_licensed')">
+        <div class="dept-icon">&#128241;</div>
+        <div class="dept-info">
+          <div class="dept-title">DM to Licensed Agent</div>
+          <div class="dept-sub">LinkedIn or Facebook outreach to someone already in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+      <div class="dept-tile" onclick="selectScenario('social_unlicensed')">
+        <div class="dept-icon">&#128241;</div>
+        <div class="dept-info">
+          <div class="dept-title">DM to Unlicensed Prospect</div>
+          <div class="dept-sub">LinkedIn or Facebook outreach to someone not yet in the industry</div>
+        </div>
+        <div style="color:var(--text-secondary);font-size:20px;flex-shrink:0;">&#x203A;</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     RECRUITING TEMPLATE MODAL
+════════════════════════════════════ -->
+<div id="recruitingTemplateModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('recruitingTemplateModal');openModal('recruitingScenarioModal')">&#8592;</button>
+      <div class="modal-title" id="templateModalTitle">&#128241; Templates</div>
+    </div>
+    <div class="modal-content">
+      <div id="templateList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     LAUNCH HUD UPLINE SELECT MODAL
+════════════════════════════════════ -->
+<div id="launchHudUplineModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('launchHudUplineModal')">&#8592;</button>
+      <div class="modal-title">&#128640; Launch HUD</div>
+    </div>
+    <div class="modal-content">
+      <div style="background:linear-gradient(135deg,#003fa8,#0a84ff);border-radius:var(--radius);padding:22px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,85,196,0.65),0 2px 8px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.22);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.7);margin-bottom:10px;">&#128276; Select Your Upline</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Who is your upline?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.92);line-height:1.6;">Select your upline to open their Launch HUD in a new tab.</div>
+      </div>
+      <button class="upline-select-btn kepler" onclick="selectLaunchHudUpline('Kepler')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,159,10,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#9889;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Kepler</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">K-Launch-HUD &nbsp;&#x203A;</div>
+        </div>
+      </button>
+      <button class="upline-select-btn jonathan" onclick="selectLaunchHudUpline('Jonathan')">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(48,209,88,0.18);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">&#128100;</div>
+        <div style="flex:1;text-align:left;">
+          <div style="font-size:16px;font-weight:800;color:#111;">Jonathan</div>
+          <div style="font-size:12px;color:#666;margin-top:2px;">J-Launch-HUD &nbsp;&#x203A;</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCRIPT TOOL VIEW (iframe)
+════════════════════════════════════ -->
+<div id="scriptView" class="view">
+  <div class="iframe-header">
+    <button class="iframe-back" onclick="closeScriptTool()">← HUD</button>
+    <div class="iframe-title">📋 The Basics — FE Script</div>
+  </div>
+  <iframe id="scriptIframe" class="script-iframe" title="The Basics FE Script Tool" allow="clipboard-write"></iframe>
+</div>
+
+<script>
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  const icon=dark?'🌙':'☀️';
+  const b=document.getElementById('dashThemeBtn');if(b)b.textContent=icon;
+}
+
+// ─── VIEW / MODAL SYSTEM ─────────────────────────────────────────────────────
+function show(id){
+  ['loginView','dashView','scriptView'].forEach(v=>{
+    const el=document.getElementById(v);
+    if(el)el.style.display=(v===id)?(v==='scriptView'?'flex':'block'):'none';
+  });
+  window.scrollTo(0,0);
+}
+
+function openModal(id){
+  const m=document.getElementById(id);
+  if(m){m.style.display='block';m.scrollTop=0;}
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  const m=document.getElementById(id);
+  if(m)m.style.display='none';
+  // only restore scroll if no other modals open
+  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal','policyLocatorModal','recruitingUplineModal','recruitingScenarioModal','recruitingTemplateModal','launchHudUplineModal']
+    .some(mid=>{const el=document.getElementById(mid);return el&&el.style.display==='block';});
+  if(!anyOpen)document.body.style.overflow='';
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  const err=document.getElementById('loginError');
+  if(user==='Winning'&&pass==='Team'){
+    err.style.display='none';
+    show('dashView');
+  } else {
+    err.style.display='block';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+  }
+}
+function doLogout(){
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginError').style.display='none';
+  show('loginView');
+  document.getElementById('loginUser').focus();
+}
+
+// ─── SCRIPT TOOL ─────────────────────────────────────────────────────────────
+function openScriptTool(){
+  const iframe=document.getElementById('scriptIframe');
+  if(!iframe.getAttribute('data-loaded')){
+    iframe.setAttribute('data-loaded','1');
+    iframe.src='https://trepin3.github.io/The-Basics/';
+  }
+  show('scriptView');
+}
+function closeScriptTool(){
+  show('dashView');
+}
+</script>
+</body>
+</html>
