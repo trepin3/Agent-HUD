@@ -656,6 +656,16 @@ I just wanted to make sure you had the opportunity.`}
       </div>
     </div>
 
+    <div class="dash-section-label">Business Retention Tools</div>
+    <div class="tile-grid single">
+      <div class="hud-tile warning-tile" onclick="openModal('policyLocatorModal')">
+        <span class="tile-icon">&#128269;</span>
+        <div class="tile-title">Deceased Policy Locator</div>
+        <div class="tile-sub">NAIC lookup &mdash; give it to every client</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+    </div>
+
     <div class="dash-section-label">Community & Support</div>
     <div class="tile-grid">
       <a class="hud-tile discord-tile" href="https://discord.gg/5MPv2PXgY" target="_blank" rel="noopener">
@@ -693,6 +703,12 @@ I just wanted to make sure you had the opportunity.`}
         <span class="tile-icon">&#127891;</span>
         <div class="tile-title">Agent Academy</div>
         <div class="tile-sub">Remote agent training</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </a>
+      <a class="hud-tile primary-tile" href="https://hub.app.nipr.com/my-nipr/frontend/identify-licensee" target="_blank" rel="noopener">
+        <span class="tile-icon">&#127380;</span>
+        <div class="tile-title">Get NPN &amp; Licenses</div>
+        <div class="tile-sub">NIPR licensee lookup</div>
         <span class="tile-arrow">&#x2197;</span>
       </a>
     </div>
@@ -1132,6 +1148,42 @@ I just wanted to make sure you had the opportunity.`}
 
 
 <!-- ════════════════════════════════════
+     DECEASED POLICY LOCATOR MODAL
+════════════════════════════════════ -->
+<div id="policyLocatorModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('policyLocatorModal')">&#8592;</button>
+      <div class="modal-title">&#128269; Deceased Policy Locator</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#a35c00,#ff9f0a);border:none;border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:0 8px 32px rgba(163,92,0,0.55),0 2px 8px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.22);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.75);margin-bottom:10px;">&#128200; Retention &amp; Referral Tool</div>
+        <div style="font-size:19px;font-weight:800;color:#fff;margin-bottom:8px;">Give this to every client.</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.95);line-height:1.55;margin-bottom:12px;">Free NAIC service that helps families find life insurance left by a loved one.</div>
+        <div style="font-size:15.5px;font-weight:800;color:#fff;line-height:1.5;padding-top:12px;border-top:1px solid rgba(255,255,255,0.28);">Giving it away builds trust, holds persistency, and opens referrals.</div>
+      </div>
+
+      <div class="person-card">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:var(--warning);margin-bottom:6px;">&#128172; Ask Every Client</div>
+        <div style="font-size:17px;font-weight:800;color:var(--text);line-height:1.45;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">"Anyone in the family missing a policy from a parent or grandparent?"</div>
+
+        <div style="font-size:15.5px;color:var(--text);line-height:1.75;margin-bottom:18px;">
+          &bull;&nbsp; Share at delivery &mdash; and again at every annual review.<br>
+          &bull;&nbsp; Get it to the beneficiaries too. New names in your book.<br>
+          &bull;&nbsp; <strong>Set expectations:</strong> insurers reply to the beneficiary only, and it takes weeks.
+        </div>
+        <a href="https://eapps.naic.org/life-policy-locator/#/welcome" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:10px;background:rgba(255,159,10,0.08);border:1.5px solid var(--warning);color:#a35c00;font-size:16px;font-weight:800;text-decoration:none;">
+          &#128269; Open NAIC Policy Locator &nbsp;&#x2197;
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      RECRUITING UPLINE SELECT MODAL
 ════════════════════════════════════ -->
 <div id="recruitingUplineModal" class="modal-overlay">
@@ -1335,7 +1387,7 @@ function closeModal(id){
   const m=document.getElementById(id);
   if(m)m.style.display='none';
   // only restore scroll if no other modals open
-  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal','recruitingUplineModal','recruitingScenarioModal','recruitingTemplateModal','launchHudUplineModal']
+  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal','policyLocatorModal','recruitingUplineModal','recruitingScenarioModal','recruitingTemplateModal','launchHudUplineModal']
     .some(mid=>{const el=document.getElementById(mid);return el&&el.style.display==='block';});
   if(!anyOpen)document.body.style.overflow='';
 }
