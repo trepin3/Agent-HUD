@@ -64,6 +64,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .hud-tile.discord-tile{border-color:#5865f2;background:linear-gradient(135deg,rgba(88,101,242,0.06),rgba(88,101,242,0.02));}
 .hud-tile.script-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(0,113,227,0.04));}
 .hud-tile.ers-tile{border-color:var(--danger);background:linear-gradient(135deg,rgba(255,69,58,0.07),rgba(255,159,10,0.04));}
+
+/* ── BANK ROUTING LOOKUP ── */
+.bank-lookup-card{background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(48,209,88,0.02));border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow);border:1px solid var(--success);position:relative;}
+.bank-input-wrap{position:relative;margin-bottom:10px;}
+.bank-input-wrap input{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:16px;background:var(--input-bg);color:var(--text);outline:none;font-family:inherit;}
+.bank-input-wrap input:focus{border-color:var(--primary);}
+.bank-dropdown{display:none;position:absolute;left:0;right:0;top:100%;background:var(--card);border:1.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);max-height:200px;overflow-y:auto;z-index:20;box-shadow:var(--shadow-lg);}
+.bank-dropdown-item{padding:11px 14px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text);}
+.bank-dropdown-item:last-child{border-bottom:none;}
+.bank-dropdown-item:hover,.bank-dropdown-item:active{background:var(--input-bg);}
+.routing-result-box{display:none;margin-top:12px;padding:16px;background:rgba(48,209,88,0.1);border:1.5px solid var(--success);border-radius:var(--radius-sm);text-align:center;}
+.routing-result-label{font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.routing-result-num{font-size:28px;font-weight:800;letter-spacing:2px;color:var(--text);}
+.routing-result-bank{font-size:13px;color:var(--text-secondary);margin-top:4px;}
+.routing-not-found{display:none;margin-top:12px;padding:14px;background:rgba(255,69,58,0.1);border:1.5px solid var(--danger);border-radius:var(--radius-sm);text-align:center;font-size:14px;color:var(--text);}
+.bank-lookup-wrap{margin:0 0 12px;position:relative;z-index:30;}
+.bank-lookup-fields{margin-top:14px;}
 .tile-icon{font-size:30px;margin-bottom:10px;display:block;}
 .tile-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;letter-spacing:-0.2px;}
 .tile-sub{font-size:12px;color:var(--text-secondary);font-weight:500;line-height:1.4;}
@@ -654,6 +671,37 @@ I just wanted to make sure you had the opportunity.`}
         <div class="tile-title">Sales Script</div>
         <div class="tile-sub">The Basics FE Script</div>
         <span class="tile-arrow">▶</span>
+      </div>
+    </div>
+
+    <div class="bank-lookup-wrap">
+      <div class="bank-lookup-card">
+        <span class="tile-icon">&#127974;</span>
+        <div class="tile-title">Bank Routing Lookup</div>
+        <div class="tile-sub">Find a routing number by state &amp; bank</div>
+        <div class="bank-lookup-fields">
+        <div class="bank-input-wrap">
+          <input type="text" id="wStateInput" placeholder="Type state (e.g. Texas or TX)&hellip;"
+            autocomplete="nope" autocorrect="off" autocapitalize="off" spellcheck="false"
+            oninput="searchState(this.value)" onfocus="searchState(this.value)">
+          <input type="hidden" id="wStateVal">
+          <div class="bank-dropdown" id="wStateDropdown"></div>
+        </div>
+        <div class="bank-input-wrap">
+          <input type="text" id="wBankInput" placeholder="Type bank name&hellip;"
+            autocomplete="nope" autocorrect="off" autocapitalize="off" spellcheck="false"
+            oninput="searchBank(this.value)" onfocus="searchBank(this.value)"
+            onblur="setTimeout(lookupRouting,200)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('wBankDropdown').style.display='none';lookupRouting();}">
+          <div class="bank-dropdown" id="wBankDropdown"></div>
+        </div>
+        <div class="routing-result-box" id="wRoutingResult">
+          <div class="routing-result-label">Routing Number</div>
+          <div class="routing-result-num" id="wRoutingNum"></div>
+          <div class="routing-result-bank" id="wRoutingBank"></div>
+        </div>
+        <div class="routing-not-found" id="wRoutingNotFound"></div>
+        </div>
       </div>
     </div>
 
@@ -1379,6 +1427,114 @@ I just wanted to make sure you had the opportunity.`}
 </div>
 
 <script>
+// ─── BANK ROUTING LOOKUP ─────────────────────────────────────────────────────
+const BANK_DATA = {
+  "Chase":{states:{"AZ":"122100024","CA":"322271627","CO":"102001017","CT":"021202337","FL":"267084131","GA":"061092387","HI":"322282001","ID":"123271978","IL":"071000013","IN":"074000010","KY":"083000137","LA":"065400137","MI":"072000326","NV":"322271627","NJ":"021202337","NY":"021000021","OH":"044000037","OK":"103000648","OR":"325070760","TX":"111000614","UT":"124001545","VA":"051900366","WA":"325070760","WI":"075000019","ALL":"021000021"}},
+  "Bank of America":{states:{"AL":"051000017","AZ":"122101706","CA":"121000358","CO":"123103716","CT":"011900254","DC":"054001204","FL":"063100277","GA":"061000052","HI":"121301028","IL":"081904808","IN":"081904808","KY":"083900483","LA":"065005616","MD":"052001633","MA":"011000138","MI":"072000805","MN":"071922467","MO":"081000032","NE":"104000029","NV":"122400724","NJ":"021200339","NM":"107000327","NY":"021000322","NC":"053000196","OH":"071214579","OR":"323070380","PA":"031202084","SC":"053904483","TN":"064000020","TX":"111000025","UT":"124301767","VA":"051000017","WA":"125000024","WI":"075000051","ALL":"026009593"}},
+  "Wells Fargo":{states:{"AL":"062000080","AZ":"122105155","CA":"121042882","CO":"102000076","FL":"063107513","GA":"061000227","IA":"073000228","IL":"071101307","IN":"074900275","MN":"091000019","MO":"081000116","MT":"092900383","NC":"053000219","NE":"104000058","NJ":"021200025","NM":"107002192","NV":"321270742","NY":"026012881","OH":"042101021","OR":"123006800","PA":"031000503","SC":"053207766","SD":"091400046","TX":"111900659","UT":"124002971","VA":"051400549","WI":"075911988","ALL":"121042882"}},
+  "Citi":{states:{"NY":"021000089","CA":"322271724","ALL":"021000089"}},
+  "Citibank":{states:{"NY":"021000089","CA":"322271724","ALL":"021000089"}},
+  "US Bank":{states:{"MN":"091000022","WA":"123103729","CA":"122235821","OH":"042000013","ALL":"091000022"}},
+  "Capital One":{states:{"TX":"111901014","LA":"065000090","MD":"051405515","VA":"051405515","NY":"026013356","ALL":"051405515"}},
+  "Truist":{states:{"NC":"053101121","FL":"063102152","VA":"055003201","GA":"061000104","MD":"055002707","SC":"053201607","ALL":"053101121"}},
+  "TD Bank":{states:{"NJ":"031201360","NY":"026013673","MA":"011103093","CT":"011600033","FL":"067014822","NC":"053902197","PA":"036001808","NH":"011400071","ALL":"031101266"}},
+  "PNC Bank":{states:{"PA":"043000096","OH":"041000124","NJ":"031207607","MD":"054000030","IN":"074000010","KY":"083000108","MI":"072000326","MO":"081000210","NC":"053000219","VA":"054000030","IL":"071921891","ALL":"043000096"}},
+  "Fifth Third Bank":{states:{"OH":"042000314","KY":"083002342","MI":"072400052","IN":"074501864","FL":"063109935","GA":"061000010","ALL":"042000314"}},
+  "Regions Bank":{states:{"AL":"062000019","FL":"063104668","GA":"061101375","TN":"064000017","MS":"065305436","AR":"082000109","LA":"065404219","ALL":"062000019"}},
+  "Citizens Bank":{states:{"RI":"011500010","MA":"011401533","NH":"011401533","CT":"011301798","NY":"021313103","PA":"036076150","ALL":"011500010"}},
+  "KeyBank":{states:{"OH":"041001039","CO":"107003647","NY":"022300173","WA":"125100089","OR":"123002011","AK":"125200879","ALL":"041001039"}},
+  "Huntington Bank":{states:{"OH":"044000024","MI":"072000915","IN":"074000078","KY":"083000137","ALL":"044000024"}},
+  "BMO Harris":{states:{"IL":"071000288","WI":"075000022","IN":"071025661","AZ":"122016066","MN":"096017396","ALL":"071000288"}},
+  "Santander":{states:{"MA":"011075150","NY":"021407912","PA":"231372691","NJ":"021202337","ALL":"011075150"}},
+  "M&T Bank":{states:{"NY":"022000046","MD":"052000113","PA":"031201996","VA":"051005018","ALL":"022000046"}},
+  "Ally Bank":{states:{"ALL":"124003116"}},
+  "USAA":{states:{"ALL":"314074269"}},
+  "Navy Federal":{states:{"ALL":"256074974"}},
+  "Navy Federal Credit Union":{states:{"ALL":"256074974"}},
+  "Chime":{states:{"ALL":"103100195"}},
+  "SoFi":{states:{"ALL":"031101279"}},
+  "Discover Bank":{states:{"ALL":"031100649"}},
+  "Synchrony Bank":{states:{"ALL":"021213591"}},
+  "American Express":{states:{"ALL":"124071889"}},
+  "Goldman Sachs":{states:{"ALL":"124085066"}},
+  "Flagstar Bank":{states:{"ALL":"272471548"}},
+  "Barclays":{states:{"ALL":"031101321"}},
+  "First National Bank":{states:{"ALL":"104000016"}},
+  "Prosperity Bank":{states:{"ALL":"113122655"}},
+  "Independent Bank":{states:{"ALL":"272483905"}},
+};
+const STATE_MAP = {
+  "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
+};
+function searchState(val){
+  const dd=document.getElementById('wStateDropdown');
+  if(!val){dd.style.display='none';return;}
+  const v=val.trim().toLowerCase();
+  // Exact name or abbreviation match (any casing) — lock it in and close the list
+  const exact=stateNames.find(s=>s.toLowerCase()===v||STATE_MAP[s].toLowerCase()===v);
+  if(exact){
+    document.getElementById('wStateVal').value=STATE_MAP[exact];
+    dd.style.display='none';
+    return;
+  }
+  document.getElementById('wStateVal').value='';
+  const matches=stateNames.filter(s=>s.toLowerCase().startsWith(v)||STATE_MAP[s].toLowerCase().startsWith(v)).slice(0,8);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.innerHTML=matches.map(s=>`<div class="bank-dropdown-item" onmousedown="selectState('${s}','${STATE_MAP[s]}')">${s} (${STATE_MAP[s]})</div>`).join('');
+  dd.style.display='block';
+}
+function selectState(name,code){
+  document.getElementById('wStateInput').value=name;
+  document.getElementById('wStateVal').value=code;
+  document.getElementById('wStateDropdown').style.display='none';
+}
+function searchBank(val){
+  const dd=document.getElementById('wBankDropdown');
+  if(!val||val.length<2){dd.style.display='none';return;}
+  const v=val.toLowerCase();
+  const matches=bankNames.filter(b=>b.toLowerCase().includes(v)).slice(0,8);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.innerHTML=matches.map(b=>`<div class="bank-dropdown-item" onmousedown="selectBank('${b.replace(/'/g,"&#39;")}')">${b}</div>`).join('');
+  dd.style.display='block';
+}
+function selectBank(name){
+  document.getElementById('wBankInput').value=name;
+  document.getElementById('wBankDropdown').style.display='none';
+  setTimeout(lookupRouting,100);
+}
+function lookupRouting(){
+  const bankInput=document.getElementById('wBankInput').value.trim();
+  const stateCode=document.getElementById('wStateVal').value;
+  const resultBox=document.getElementById('wRoutingResult');
+  const notFound=document.getElementById('wRoutingNotFound');
+  if(!bankInput){resultBox.style.display='none';notFound.style.display='none';return;}
+  // Find bank
+  let bankKey=null;
+  const v=bankInput.toLowerCase();
+  for(const k of bankNames){if(k.toLowerCase()===v){bankKey=k;break;}}
+  if(!bankKey){for(const k of bankNames){if(k.toLowerCase().includes(v)||v.includes(k.toLowerCase())){bankKey=k;break;}}}
+  if(!bankKey){
+    resultBox.style.display='none';
+    notFound.style.display='block';
+    notFound.textContent=`No routing found for "${bankInput}". Ask client to check their checkbook or banking app.`;
+    return;
+  }
+  const bankObj=BANK_DATA[bankKey];
+  const routing=bankObj.states[stateCode]||bankObj.states['ALL'];
+  if(!routing){
+    resultBox.style.display='none';
+    notFound.style.display='block';
+    notFound.textContent=`Found ${bankKey} but no routing for ${stateCode||'this state'}. Try "ALL" or ask client to verify.`;
+    return;
+  }
+  notFound.style.display='none';
+  document.getElementById('wRoutingNum').textContent=routing;
+  document.getElementById('wRoutingBank').textContent=bankKey+(stateCode?' — '+stateCode:'');
+  resultBox.style.display='block';
+}
+const bankNames=Object.keys(BANK_DATA);
+const stateNames=Object.keys(STATE_MAP);
+
 // ─── THEME ───────────────────────────────────────────────────────────────────
 function toggleTheme(){
   const html=document.documentElement;
