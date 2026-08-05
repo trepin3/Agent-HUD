@@ -63,6 +63,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .hud-tile.warning-tile{border-color:var(--warning);background:linear-gradient(135deg,rgba(255,159,10,0.06),rgba(255,159,10,0.02));}
 .hud-tile.discord-tile{border-color:#5865f2;background:linear-gradient(135deg,rgba(88,101,242,0.06),rgba(88,101,242,0.02));}
 .hud-tile.script-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(0,113,227,0.04));}
+.hud-tile.ers-tile{border-color:var(--danger);background:linear-gradient(135deg,rgba(255,69,58,0.07),rgba(255,159,10,0.04));}
 .tile-icon{font-size:30px;margin-bottom:10px;display:block;}
 .tile-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;letter-spacing:-0.2px;}
 .tile-sub{font-size:12px;color:var(--text-secondary);font-weight:500;line-height:1.4;}
@@ -657,12 +658,18 @@ I just wanted to make sure you had the opportunity.`}
     </div>
 
     <div class="dash-section-label">Business Retention Tools</div>
-    <div class="tile-grid single">
+    <div class="tile-grid">
       <div class="hud-tile warning-tile" onclick="openModal('policyLocatorModal')">
         <span class="tile-icon">&#128269;</span>
         <div class="tile-title">Deceased Policy Locator</div>
         <div class="tile-sub">NAIC lookup &mdash; give it to every client</div>
         <span class="tile-arrow">&#x203A;</span>
+      </div>
+      <div class="hud-tile ers-tile" onclick="openErsTool()">
+        <span class="tile-icon">&#128680;</span>
+        <div class="tile-title">ERS Script</div>
+        <div class="tile-sub">Emergency Response System &mdash; set it &amp; earn referrals</div>
+        <span class="tile-arrow">&#9654;</span>
       </div>
     </div>
 
@@ -1359,6 +1366,17 @@ I just wanted to make sure you had the opportunity.`}
   <iframe id="scriptIframe" class="script-iframe" title="The Basics FE Script Tool" allow="clipboard-write"></iframe>
 </div>
 
+<!-- ════════════════════════════════════
+     ERS SCRIPT VIEW (iframe)
+════════════════════════════════════ -->
+<div id="ersView" class="view">
+  <div class="iframe-header">
+    <button class="iframe-back" onclick="closeErsTool()">← HUD</button>
+    <div class="iframe-title">🚨 ERS — Emergency Response System</div>
+  </div>
+  <iframe id="ersIframe" class="script-iframe" title="ERS Script Tool" allow="clipboard-write"></iframe>
+</div>
+
 <script>
 // ─── THEME ───────────────────────────────────────────────────────────────────
 function toggleTheme(){
@@ -1371,9 +1389,9 @@ function toggleTheme(){
 
 // ─── VIEW / MODAL SYSTEM ─────────────────────────────────────────────────────
 function show(id){
-  ['loginView','dashView','scriptView'].forEach(v=>{
+  ['loginView','dashView','scriptView','ersView'].forEach(v=>{
     const el=document.getElementById(v);
-    if(el)el.style.display=(v===id)?(v==='scriptView'?'flex':'block'):'none';
+    if(el)el.style.display=(v===id)?((v==='scriptView'||v==='ersView')?'flex':'block'):'none';
   });
   window.scrollTo(0,0);
 }
@@ -1424,6 +1442,17 @@ function openScriptTool(){
   show('scriptView');
 }
 function closeScriptTool(){
+  show('dashView');
+}
+function openErsTool(){
+  const iframe=document.getElementById('ersIframe');
+  if(!iframe.getAttribute('data-loaded')){
+    iframe.setAttribute('data-loaded','1');
+    iframe.src='https://trepin3.github.io/Emergency-Response/';
+  }
+  show('ersView');
+}
+function closeErsTool(){
   show('dashView');
 }
 </script>
