@@ -100,6 +100,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .mds-flag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--warning);margin-bottom:9px;}
 .hud-tile.gmail-tile{border-color:#ea4335;background:linear-gradient(135deg,rgba(234,67,53,0.07),rgba(234,67,53,0.02));}
 .hud-tile.sheets-tile{border-color:#0f9d58;background:linear-gradient(135deg,rgba(15,157,88,0.07),rgba(15,157,88,0.02));}
+.hud-tile.dashly-tile{border-color:#7c3aed;background:linear-gradient(135deg,rgba(124,58,237,0.07),rgba(124,58,237,0.02));}
 .hud-tile.cal-tile{border-color:#4285f4;background:linear-gradient(135deg,rgba(66,133,244,0.07),rgba(66,133,244,0.02));}
 .hud-tile.meet-tile{border-color:#1a73e8;background:linear-gradient(135deg,rgba(26,115,232,0.07),rgba(26,115,232,0.02));}
 .hud-tile.debt-tile{border-color:#00a86b;background:linear-gradient(135deg,rgba(0,168,107,0.08),rgba(0,168,107,0.02));}
@@ -738,6 +739,18 @@ I just wanted to make sure you had the opportunity.`}
       <div class="hud-tile cal-tile" onclick="openWin('https://calendar.google.com/')">
         <span class="tile-icon">&#128197;</span>
         <div class="tile-title">Calendar</div>
+        <div class="tile-sub">Opens in its own window</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </div>
+    </div>
+    </div>
+
+    <div class="dash-section">
+    <div class="dash-section-label">CRM</div>
+    <div class="tile-grid single">
+      <div class="hud-tile dashly-tile" onclick="openWin('https://app.dashlypro.com/?url=%252Flocation%252Fdashboard')">
+        <span class="tile-icon">&#128202;</span>
+        <div class="tile-title">Dashly Pro</div>
         <div class="tile-sub">Opens in its own window</div>
         <span class="tile-arrow">&#x2197;</span>
       </div>
