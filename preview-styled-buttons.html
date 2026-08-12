@@ -67,6 +67,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 /* HUD tiles */
 .tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 .tile-grid.single{grid-template-columns:1fr;}
+.tile-grid.triple{grid-template-columns:1fr 1fr 1fr;}
 .hud-tile{background:var(--card);border-radius:var(--radius);padding:20px 18px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;position:relative;overflow:hidden;}
 .hud-tile:active{transform:scale(0.97);}
 .hud-tile.primary-tile{border-color:var(--primary);background:linear-gradient(135deg,rgba(0,113,227,0.06),rgba(0,113,227,0.02));}
@@ -97,6 +98,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 [data-theme="dark"] .mds-link{background:#10251d;color:#4fd8a2;}
 [data-theme="dark"] .tip{background:#0e2415;}
 .mds-flag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--warning);margin-bottom:9px;}
+.hud-tile.gmail-tile{border-color:#ea4335;background:linear-gradient(135deg,rgba(234,67,53,0.07),rgba(234,67,53,0.02));}
+.hud-tile.sheets-tile{border-color:#0f9d58;background:linear-gradient(135deg,rgba(15,157,88,0.07),rgba(15,157,88,0.02));}
+.hud-tile.meet-tile{border-color:#1a73e8;background:linear-gradient(135deg,rgba(26,115,232,0.07),rgba(26,115,232,0.02));}
 .hud-tile.debt-tile{border-color:#00a86b;background:linear-gradient(135deg,rgba(0,168,107,0.08),rgba(0,168,107,0.02));}
 .hud-tile.ers-tile{border-color:var(--danger);background:linear-gradient(135deg,rgba(255,69,58,0.07),rgba(255,159,10,0.04));}
 
@@ -192,7 +196,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .upline-select-btn.jonathan{border-color:rgba(48,209,88,0.9);background:#fff;box-shadow:0 4px 20px rgba(48,209,88,0.25);}
 
 @media(max-width:380px){
-  .tile-grid{grid-template-columns:1fr;}
+  .tile-grid,.tile-grid.triple{grid-template-columns:1fr;}
   .tile-icon{font-size:26px;}
 }
 </style>
@@ -694,6 +698,30 @@ I just wanted to make sure you had the opportunity.`}
     </div>
     </div>
 
+
+    <div class="dash-section">
+    <div class="dash-section-label">Google</div>
+    <div class="tile-grid triple">
+      <div class="hud-tile gmail-tile" onclick="openWin('https://mail.google.com/')">
+        <span class="tile-icon">&#9993;&#65039;</span>
+        <div class="tile-title">Gmail</div>
+        <div class="tile-sub">Opens in its own window</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </div>
+      <div class="hud-tile sheets-tile" onclick="openWin('https://docs.google.com/spreadsheets/')">
+        <span class="tile-icon">&#128202;</span>
+        <div class="tile-title">Sheets</div>
+        <div class="tile-sub">Opens in its own window</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </div>
+      <div class="hud-tile meet-tile" onclick="openWin('https://meet.google.com/')">
+        <span class="tile-icon">&#127909;</span>
+        <div class="tile-title">Meet</div>
+        <div class="tile-sub">Opens in its own window</div>
+        <span class="tile-arrow">&#x2197;</span>
+      </div>
+    </div>
+    </div>
 
     <div class="dash-section">
     <div class="dash-section-label">Sales Tools</div>
@@ -1760,6 +1788,11 @@ function doLogout(){
 }
 
 // ─── SCRIPT TOOL ─────────────────────────────────────────────────────────────
+// Same launch behaviour as Agent-HUD-Workstation: these refuse embedding, so open them for real.
+function openWin(url){
+  window.open(url,'_blank','noopener');
+}
+
 function openScriptTool(){
   const iframe=document.getElementById('scriptIframe');
   if(!iframe.getAttribute('data-loaded')){
