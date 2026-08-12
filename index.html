@@ -174,12 +174,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .dept-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
 
 /* ── SCRIPT IFRAME VIEW ── */
-#scriptView,#ersView{position:fixed;inset:0;display:flex;flex-direction:column;z-index:40;}
+#scriptView,#ersView,#quoteView{position:fixed;inset:0;display:flex;flex-direction:column;z-index:40;}
 .iframe-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .iframe-back{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .iframe-back:active{transform:scale(0.97);}
 .iframe-title{font-size:15px;font-weight:800;color:var(--text);flex:1;text-align:center;}
+.cred-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;flex:1;}
+.cred-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:8px;background:var(--input-bg);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text);}
+.cred-chip b{font-weight:900;color:var(--text-secondary);text-transform:uppercase;font-size:10px;letter-spacing:0.6px;}
+.cred-chip code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;}
+.cred-copy{padding:3px 8px;border-radius:12px;border:1.5px solid var(--primary);background:rgba(0,113,227,0.08);color:var(--primary);font-size:10px;font-weight:800;cursor:pointer;font-family:inherit;}
+.cred-copy.copied{border-color:var(--success);background:rgba(48,209,88,0.1);color:var(--success);}
 .script-iframe{flex:1;min-height:0;width:100%;border:none;background:var(--bg);}
+.frame-stage{flex:1;min-height:0;position:relative;display:flex;}
+.frame-loading{position:absolute;inset:0;z-index:2;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;}
+.frame-loading.done{display:none;}
+.frame-spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--primary);animation:frame-spin 0.8s linear infinite;}
+@keyframes frame-spin{to{transform:rotate(360deg);}}
+.frame-loading-title{font-size:15px;font-weight:800;color:var(--text);}
+.frame-loading-sub{font-size:13px;font-weight:600;color:var(--text-secondary);line-height:1.5;max-width:320px;}
+.frame-loading-link{font-size:12.5px;font-weight:800;color:var(--primary);text-decoration:none;margin-top:2px;}
 
 /* Theme btn (fixed) */
 .theme-fixed{position:fixed;top:16px;right:16px;z-index:200;width:36px;height:36px;border-radius:50%;border:none;background:var(--input-bg);color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);}
@@ -733,12 +747,12 @@ I just wanted to make sure you had the opportunity.`}
     <div class="dash-section">
     <div class="dash-section-label">Sales Tools</div>
     <div class="tile-grid">
-      <a class="hud-tile success-tile" href="https://www.landing.insurancetoolkits.com/" target="_blank" rel="noopener">
-        <span class="tile-icon">📊</span>
+      <div class="hud-tile success-tile" onclick="openQuoteTool()">
+        <span class="tile-icon">&#127991;&#65039;</span>
         <div class="tile-title">Quote Tools</div>
-        <div class="tile-sub">Insurance Toolkits</div>
-        <span class="tile-arrow">↗</span>
-      </a>
+        <div class="tile-sub">Insurance Toolkits &mdash; shared login</div>
+        <span class="tile-arrow">&#9654;</span>
+      </div>
       <div class="hud-tile script-tile" onclick="openScriptTool()">
         <span class="tile-icon">🔥</span>
         <div class="tile-title">Sales Script</div>
@@ -1621,6 +1635,30 @@ I just wanted to make sure you had the opportunity.`}
 </div>
 
 <!-- ════════════════════════════════════
+     QUOTE TOOLS VIEW (iframe)
+════════════════════════════════════ -->
+<div id="quoteView" class="view">
+  <div class="iframe-header">
+    <button class="iframe-back" onclick="closeQuoteTool()">← HUD</button>
+    <div class="cred-bar">
+      <span class="cred-chip"><b>User</b><code id="qtUser">hello@dashlypro.com</code>
+        <button class="cred-copy" onclick="copyCred('qtUser',this)">Copy</button></span>
+      <span class="cred-chip"><b>Pass</b><code id="qtPass">FmJqmYxyaQk</code>
+        <button class="cred-copy" onclick="copyCred('qtPass',this)">Copy</button></span>
+    </div>
+  </div>
+  <div class="frame-stage">
+    <iframe id="quoteIframe" class="script-iframe" title="Insurance Toolkits" allow="clipboard-write"></iframe>
+    <div class="frame-loading" id="quoteLoading">
+      <div class="frame-spinner"></div>
+      <div class="frame-loading-title">Loading Insurance Toolkits&hellip;</div>
+      <div class="frame-loading-sub" id="quoteLoadingSub">This site is slow to wake up &mdash; usually 20&ndash;30 seconds.</div>
+      <a class="frame-loading-link" href="https://insurancetoolkits.com/login" target="_blank" rel="noopener">Open in a new tab instead &nbsp;&#8599;</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      ERS SCRIPT VIEW (iframe)
 ════════════════════════════════════ -->
 <div id="ersView" class="view">
@@ -1751,9 +1789,9 @@ function toggleTheme(){
 
 // ─── VIEW / MODAL SYSTEM ─────────────────────────────────────────────────────
 function show(id){
-  ['loginView','dashView','scriptView','ersView'].forEach(v=>{
+  ['loginView','dashView','scriptView','ersView','quoteView'].forEach(v=>{
     const el=document.getElementById(v);
-    if(el)el.style.display=(v===id)?((v==='scriptView'||v==='ersView')?'flex':'block'):'none';
+    if(el)el.style.display=(v===id)?((v==='scriptView'||v==='ersView'||v==='quoteView')?'flex':'block'):'none';
   });
   window.scrollTo(0,0);
 }
@@ -1830,6 +1868,42 @@ function calcMds(lvl){
   out.innerHTML='At <strong>'+mdsLevel+'%</strong> on '+fmt(debt)+' enrolled:<br>'+
                 '<span style="font-size:19px;font-weight:900;color:#00694a;">'+fmt(total)+' total</span>'+
                 ' &nbsp;&mdash;&nbsp; '+fmt(half)+' month 1, '+fmt(half)+' month 2';
+}
+
+let quoteWaitTimer=null;
+function openQuoteTool(){
+  const iframe=document.getElementById('quoteIframe');
+  const load=document.getElementById('quoteLoading');
+  const sub=document.getElementById('quoteLoadingSub');
+  if(!iframe.getAttribute('data-loaded')){
+    iframe.setAttribute('data-loaded','1');
+    load.classList.remove('done');
+    iframe.addEventListener('load',function(){
+      load.classList.add('done');
+      clearTimeout(quoteWaitTimer);
+    },{once:true});
+    // Reassure rather than leave them staring at a spinner that never explains itself.
+    clearTimeout(quoteWaitTimer);
+    quoteWaitTimer=setTimeout(function(){
+      if(!load.classList.contains('done'))
+        sub.innerHTML='Still waking up. It usually lands within a minute &mdash; or open it in a new tab.';
+    },20000);
+    iframe.src='https://insurancetoolkits.com/login';
+  }
+  show('quoteView');
+}
+function closeQuoteTool(){ show('dashView'); }
+
+function copyCred(id,btn){
+  const t=(document.getElementById(id)||{}).textContent||'';
+  function done(){
+    const was=btn.textContent;
+    btn.textContent='Copied'; btn.classList.add('copied');
+    setTimeout(function(){btn.textContent=was;btn.classList.remove('copied');},1400);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(function(){fallbackCopy(t,done);});
+  }else{ fallbackCopy(t,done); }
 }
 
 function openErsTool(){
