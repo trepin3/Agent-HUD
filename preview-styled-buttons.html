@@ -51,7 +51,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .icon-btn:active{transform:scale(0.9);}
 
 .dashboard-wrap{max-width:680px;margin:0 auto;padding:20px 16px 60px;}
+.dash-section{break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;}
+.dash-section > .dash-section-label:first-child{margin-top:0;}
+@media(min-width:1000px){
+  .dashboard-wrap{max-width:1180px;columns:2;column-gap:30px;padding-top:24px;}
+  .dash-section{margin-bottom:22px;}
+}
+@media(min-width:1560px){
+  .dashboard-wrap{max-width:1720px;columns:3;}
+}
 .dash-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text);opacity:0.5;margin:20px 0 10px 2px;}
+/* Modal overlays are dark in both themes — headings need to be white there */
+.modal-overlay .dash-section-label{color:#fff;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.35);}
 
 /* HUD tiles */
 .tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
@@ -63,6 +74,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .hud-tile.warning-tile{border-color:var(--warning);background:linear-gradient(135deg,rgba(255,159,10,0.06),rgba(255,159,10,0.02));}
 .hud-tile.discord-tile{border-color:#5865f2;background:linear-gradient(135deg,rgba(88,101,242,0.06),rgba(88,101,242,0.02));}
 .hud-tile.script-tile{border-color:var(--success);background:linear-gradient(135deg,rgba(48,209,88,0.06),rgba(0,113,227,0.04));}
+.tip{background:#eaf7ee;border-left:4px solid var(--success);border-radius:var(--radius-sm);padding:11px 14px;margin:10px 0;font-size:13px;line-height:1.6;color:var(--text);}
+.tip-lbl{font-weight:800;color:var(--success);font-size:10px;text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:3px;}
+.action-btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:var(--radius-sm);padding:13px 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:none;transition:opacity 0.2s,transform 0.15s;}
+.action-btn:active{transform:scale(0.98);opacity:0.9;}
+.action-btn.btn-primary{background:var(--primary);color:#fff;}
+.mds-calc{margin-top:14px;padding:14px;border-radius:var(--radius-sm);background:#eaf7f1;border:1.5px solid #00a86b;}
+[data-theme="dark"] .mds-calc{background:#10251d;}
+.mds-calc-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.9px;color:#00694a;margin-bottom:9px;}
+[data-theme="dark"] .mds-calc-label{color:#4fd8a2;}
+.mds-calc-row{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;}
+.mds-calc-row:focus-within{border-color:#00a86b;}
+.mds-calc-input{flex:1;width:100%;border:none;outline:none;background:transparent;color:var(--text);font-family:inherit;font-size:20px;font-weight:800;padding:8px 0;}
+.mds-calc-input::-webkit-outer-spin-button,.mds-calc-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.mds-calc-input[type=number]{-moz-appearance:textfield;}
+.mds-level-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
+.mds-lvl{flex:1 1 auto;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.mds-lvl.sel{border-color:#00a86b;background:#00a86b;color:#fff;}
+.mds-out{margin-top:11px;font-size:13px;font-weight:700;color:var(--text);line-height:1.6;}
+.mds-link{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:9px;background:#eaf7f1;border:1.5px solid #00a86b;color:#00694a;font-size:13.5px;font-weight:800;text-decoration:none;}
+.mds-link:active{transform:scale(0.98);}
+[data-theme="dark"] .mds-link{background:#10251d;color:#4fd8a2;}
+[data-theme="dark"] .tip{background:#0e2415;}
+.mds-flag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--warning);margin-bottom:9px;}
+.hud-tile.debt-tile{border-color:#00a86b;background:linear-gradient(135deg,rgba(0,168,107,0.08),rgba(0,168,107,0.02));}
 .hud-tile.ers-tile{border-color:var(--danger);background:linear-gradient(135deg,rgba(255,69,58,0.07),rgba(255,159,10,0.04));}
 
 /* ── BANK ROUTING LOOKUP ── */
@@ -641,7 +676,7 @@ I just wanted to make sure you had the opportunity.`}
   </div>
 
   <div class="dashboard-wrap">
-
+    <div class="dash-section">
     <div class="dash-section-label">Operations</div>
     <div class="tile-grid">
       <a class="hud-tile primary-tile" href="https://arc.naaleads.com/home" target="_blank" rel="noopener">
@@ -657,7 +692,10 @@ I just wanted to make sure you had the opportunity.`}
         <span class="tile-arrow">↗</span>
       </a>
     </div>
+    </div>
 
+
+    <div class="dash-section">
     <div class="dash-section-label">Sales Tools</div>
     <div class="tile-grid">
       <a class="hud-tile success-tile" href="https://www.landing.insurancetoolkits.com/" target="_blank" rel="noopener">
@@ -671,6 +709,15 @@ I just wanted to make sure you had the opportunity.`}
         <div class="tile-title">Sales Script</div>
         <div class="tile-sub">The Basics FE Script</div>
         <span class="tile-arrow">▶</span>
+      </div>
+    </div>
+
+    <div class="tile-grid single">
+      <div class="hud-tile debt-tile" onclick="openModal('debtModal')">
+        <span class="tile-icon">&#128176;</span>
+        <div class="tile-title">Mediator Debt Solutions</div>
+        <div class="tile-sub">Debt settlement &mdash; a second product for the same client</div>
+        <span class="tile-arrow">&#x203A;</span>
       </div>
     </div>
 
@@ -704,7 +751,10 @@ I just wanted to make sure you had the opportunity.`}
         </div>
       </div>
     </div>
+    </div>
 
+
+    <div class="dash-section">
     <div class="dash-section-label">Business Retention Tools</div>
     <div class="tile-grid">
       <div class="hud-tile warning-tile" onclick="openModal('policyLocatorModal')">
@@ -720,7 +770,10 @@ I just wanted to make sure you had the opportunity.`}
         <span class="tile-arrow">&#9654;</span>
       </div>
     </div>
+    </div>
 
+
+    <div class="dash-section">
     <div class="dash-section-label">Builder Tools</div>
     <div class="tile-grid">
       <div class="hud-tile primary-tile" onclick="openModal('recruitingUplineModal')">
@@ -736,7 +789,10 @@ I just wanted to make sure you had the opportunity.`}
         <span class="tile-arrow">&#x203A;</span>
       </div>
     </div>
+    </div>
 
+
+    <div class="dash-section">
     <div class="dash-section-label">Community & Support</div>
     <div class="tile-grid">
       <a class="hud-tile discord-tile" href="https://discord.gg/5MPv2PXgY" target="_blank" rel="noopener">
@@ -752,7 +808,10 @@ I just wanted to make sure you had the opportunity.`}
         <span class="tile-arrow">›</span>
       </div>
     </div>
+    </div>
 
+
+    <div class="dash-section">
     <div class="dash-section-label">Agent Development</div>
     <div class="tile-grid">
       <a class="hud-tile success-tile" href="https://agentacademy.thinkific.com/courses/remote-agent-training" target="_blank" rel="noopener">
@@ -768,7 +827,7 @@ I just wanted to make sure you had the opportunity.`}
         <span class="tile-arrow">&#x2197;</span>
       </a>
     </div>
-
+    </div>
   </div>
 </div>
 
@@ -1240,6 +1299,117 @@ I just wanted to make sure you had the opportunity.`}
 </div>
 
 <!-- ════════════════════════════════════
+     MEDIATOR DEBT SOLUTIONS MODAL
+════════════════════════════════════ -->
+<div id="debtModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('debtModal')">&#8592;</button>
+      <div class="modal-title">&#128176; Mediator Debt Solutions</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#00593a,#00a86b);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 8px 28px rgba(0,89,58,0.5);border:1px solid rgba(255,255,255,0.2);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.75);margin-bottom:9px;">&#128200; A Second Product For The Same Client</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:9px;">Refer the client. Mediator does the rest.</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.95);line-height:1.55;">They negotiate unsecured debt down to a fraction of what's owed. You refer &mdash; they call, follow up and close. Set one expectation: <strong>your Debt Solutions Partner will be reaching out.</strong></div>
+      </div>
+
+      <a class="action-btn btn-primary" href="https://naalogin.mediatordebtsolutions.com/login" target="_blank" rel="noopener" style="display:flex;width:100%;justify-content:center;margin:0 0 8px;">&#128273; Agent Portal &mdash; Get Your Link &amp; QR Code &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://flow.page/thealliance" target="_blank" rel="noopener" style="width:100%;margin:0 0 8px;padding:13px;font-size:14px;">&#128279; The Alliance Quick Links &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://naa.mediatordebtsolutions.com" target="_blank" rel="noopener" style="width:100%;margin:0 0 8px;padding:13px;font-size:14px;">&#128221; Client Submission Form &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://www.dropbox.com/scl/fo/l2tgafsnmx3hlndwsxw5f/AAXWD22pVxLFk0mNrefEJio?rlkey=38b53dybmz5ormornzmk2cc3p&amp;e=2&amp;st=yca3k8qn&amp;dl=0" target="_blank" rel="noopener" style="width:100%;margin:0 0 18px;padding:13px;font-size:14px;">&#128444;&#65039; Advertising Media &amp; Flyers &nbsp;&#8599;</a>
+
+      <!-- ── FINDING CLIENTS ── -->
+      <div class="dash-section-label">&#127919; Finding Clients</div>
+      <div class="person-card">
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-bottom:11px;"><strong>Get your referral link and QR code from the portal first</strong> &mdash; a flyer without your link pays somebody else.</div>
+        <div style="font-size:13.5px;color:var(--text);line-height:1.75;">
+          &bull;&nbsp; <strong>Social:</strong> post graphics from the media folder with your link in the caption or bio.<br>
+          &bull;&nbsp; <strong>Flyers:</strong> download one, paste your QR code on it, hang it on bulletin boards &mdash; laundromats, grocery stores, churches, gyms, apartment mail rooms. Scans go straight to your form.<br>
+          &bull;&nbsp; <strong>Your own book</strong> &mdash; see below.
+        </div>
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <strong>They said they can't afford it &mdash; pivot, don't hang up.</strong><br>
+          Enroll them first. Cutting their monthly debt payments frees up the money the premium needed, and gets them out of debt faster. Come back for the policy once there's room in the budget.
+        </div>
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:11px;">
+          <strong>They bought &mdash; enroll them at the ERS appointment.</strong><br>
+          A client with lower debt payments has breathing room, and a client with breathing room doesn't go looking for something to cancel. This is a retention play as much as a commission.
+        </div>
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:11px;">
+          <strong>It goes both ways.</strong><br>
+          Mediator refers their debt clients back to you for life insurance. Those leads come to you and <strong>you call them yourself</strong> &mdash; a household already talking to your partner about their finances, warm before you dial.
+        </div>
+        <div class="tip" style="margin-top:11px;"><span class="tip-lbl">Ask On Any Call</span>"Are you carrying credit card or medical debt that's making things tight? I work with a company that settles it for a fraction of what's owed &mdash; costs nothing to see if you qualify."</div>
+      </div>
+
+      <!-- ── PAY ── -->
+      <div class="dash-section-label">&#128184; Commission Calculator</div>
+      <div class="person-card">
+        <div class="mds-calc" style="margin-top:0;">
+          <div class="mds-calc-label">Enrolled debt</div>
+          <div class="mds-calc-row">
+            <span class="budget-prefix" style="font-size:20px;">$</span>
+            <input class="mds-calc-input" id="mdsDebt" type="number" inputmode="numeric" placeholder="100,000" oninput="calcMds()" min="0">
+          </div>
+          <div class="mds-calc-label" style="margin-top:12px;">Contract level</div>
+          <div class="mds-level-row">
+            <button class="mds-lvl" id="mdsL55" onclick="calcMds(55)">55%</button>
+            <button class="mds-lvl" id="mdsL70" onclick="calcMds(70)">70%</button>
+            <button class="mds-lvl sel" id="mdsL75" onclick="calcMds(75)">75%</button>
+            <button class="mds-lvl" id="mdsL100" onclick="calcMds(100)">100%</button>
+            <button class="mds-lvl" id="mdsL120" onclick="calcMds(120)">120%</button>
+          </div>
+          <div class="mds-out" id="mdsOut">Enter an enrolled debt amount above.</div>
+        </div>
+        <div class="tip" style="margin-top:12px;"><span class="tip-lbl">Your Own Debt Counts</span>Carrying debt yourself? Enroll it &mdash; you're paid the same commission on your own enrollment.</div>
+      </div>
+
+
+      <!-- ── QUALIFYING ── -->
+      <div class="dash-section-label">&#9989; Who Qualifies</div>
+      <div class="person-card">
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;">
+          <strong>$7,500+</strong> unsecured debt &bull; can make a monthly deposit &bull; lives in an accepted state.
+        </div>
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:11px;padding-top:11px;border-top:1px solid var(--border);">
+          <strong style="color:var(--success);">Works:</strong> credit cards, personal, business, online and pay day loans, private student loans, repo debt, medical and utility bills, store cards.<br>
+          <strong style="color:var(--warning);">Won't:</strong> tax debt, mortgages, car loans, federal student loans.
+        </div>
+        <div class="tip" style="margin-top:11px;"><span class="tip-lbl">Prime Candidates</span>Anyone already in credit counseling or with another settlement company &mdash; they've accepted they need help, they're just in the wrong program.</div>
+      </div>
+
+      <!-- ── THE CONVERSATION ── -->
+      <div class="dash-section-label">&#128172; The Conversation</div>
+      <div class="person-card">
+        <div style="font-size:13.5px;color:var(--text);line-height:1.75;">
+          <strong>1.</strong> <em>"What type of debt are you currently paying on?"</em><br>
+          <strong>2.</strong> <em>"Are your balances actually going down, or does it feel like you're not making much progress?"</em><br>
+          <strong>3.</strong> <em>"Based on what you're telling me, we may have some options for you."</em><br>
+          <strong>4.</strong> <em>"I'm going to refer you to Mediator, our debt relief partners. Within 24&ndash;48 hours you'll get a call for a free consultation."</em>
+        </div>
+        <div class="tip" style="margin-top:11px;"><span class="tip-lbl">If They Ask Details</span><em>"Great question &mdash; write it down."</em> The specialist answers on the consultation. Don't quote savings or explain the program yourself.</div>
+      </div>
+
+      <!-- ── SEND + MATERIALS ── -->
+      <div class="dash-section-label">&#128206; Send Your Client &amp; Grab Materials</div>
+      <div class="person-card">
+        <div style="font-size:13.5px;color:var(--text);line-height:1.7;">Client team <strong>800-981-6894</strong> &bull; existing lead callback <strong>(877) 873-0348</strong> &bull; <strong>info@mediatordebtsolutions.com</strong></div>
+      </div>
+      <a class="mds-link" href="https://naalogin.mediatordebtsolutions.com/marketing_material/Acceptable-Debt-Guidelines-6-4-2026.pdf" target="_blank" rel="noopener" style="margin-bottom:8px;">&#128203; Acceptable Debt Guidelines &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://naalogin.mediatordebtsolutions.com/marketing_material/Credit_Card_Tri_Fold_English.pdf" target="_blank" rel="noopener" style="margin-bottom:8px;">&#128462; Credit Card Tri-Fold &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://naalogin.mediatordebtsolutions.com/marketing_material/Debt_Savings_Calculator_ENGLISH.pdf" target="_blank" rel="noopener" style="margin-bottom:8px;">&#129518; Debt Savings Calculator &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://naalogin.mediatordebtsolutions.com/marketing_material/English_Captions.pdf" target="_blank" rel="noopener" style="margin-bottom:8px;">&#9997;&#65039; Social Media Captions &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://www.instagram.com/mediatordebtsolutions" target="_blank" rel="noopener" style="margin-bottom:8px;">&#128247; Instagram &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://mediatordebtsolutions.com/" target="_blank" rel="noopener">&#127760; Company Website &nbsp;&#8599;</a>
+
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
      RECRUITING UPLINE SELECT MODAL
 ════════════════════════════════════ -->
 <div id="recruitingUplineModal" class="modal-overlay">
@@ -1562,7 +1732,7 @@ function closeModal(id){
   const m=document.getElementById(id);
   if(m)m.style.display='none';
   // only restore scroll if no other modals open
-  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal','policyLocatorModal','recruitingUplineModal','recruitingScenarioModal','recruitingTemplateModal','launchHudUplineModal']
+  const anyOpen=['supportModal','referralModal','onboardingModal','coachingModal','pksModal','iulModal','estatePlanningModal','policyLocatorModal','debtModal','recruitingUplineModal','recruitingScenarioModal','recruitingTemplateModal','launchHudUplineModal']
     .some(mid=>{const el=document.getElementById(mid);return el&&el.style.display==='block';});
   if(!anyOpen)document.body.style.overflow='';
 }
@@ -1601,6 +1771,27 @@ function openScriptTool(){
 function closeScriptTool(){
   show('dashView');
 }
+let mdsLevel=75;
+function calcMds(lvl){
+  if(typeof lvl==='number'){
+    mdsLevel=lvl;
+    [55,70,75,100,120].forEach(function(n){
+      const b=document.getElementById('mdsL'+n);
+      if(b)b.classList.toggle('sel',n===lvl);
+    });
+  }
+  const debt=parseFloat((document.getElementById('mdsDebt')||{}).value)||0;
+  const out=document.getElementById('mdsOut');
+  if(!out)return;
+  if(debt<=0){out.textContent='Enter an enrolled debt amount above.';return;}
+  const total=debt*0.02*(mdsLevel/100);
+  const half=total/2;
+  const fmt=function(n){return '$'+n.toLocaleString('en-US',{maximumFractionDigits:0});};
+  out.innerHTML='At <strong>'+mdsLevel+'%</strong> on '+fmt(debt)+' enrolled:<br>'+
+                '<span style="font-size:19px;font-weight:900;color:#00694a;">'+fmt(total)+' total</span>'+
+                ' &nbsp;&mdash;&nbsp; '+fmt(half)+' month 1, '+fmt(half)+' month 2';
+}
+
 function openErsTool(){
   const iframe=document.getElementById('ersIframe');
   if(!iframe.getAttribute('data-loaded')){
