@@ -105,6 +105,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Robot
 .hud-tile.cal-tile{border-color:#4285f4;background:linear-gradient(135deg,rgba(66,133,244,0.07),rgba(66,133,244,0.02));}
 .hud-tile.meet-tile{border-color:#1a73e8;background:linear-gradient(135deg,rgba(26,115,232,0.07),rgba(26,115,232,0.02));}
 .hud-tile.debt-tile{border-color:#00a86b;background:linear-gradient(135deg,rgba(0,168,107,0.08),rgba(0,168,107,0.02));}
+.hud-tile.legacy-tile{border-color:#4338ca;background:linear-gradient(135deg,rgba(67,56,202,0.09),rgba(67,56,202,0.02));}
 .hud-tile.ers-tile{border-color:var(--danger);background:linear-gradient(135deg,rgba(255,69,58,0.07),rgba(255,159,10,0.04));}
 
 /* ── BANK ROUTING LOOKUP ── */
@@ -825,6 +826,14 @@ I just wanted to make sure you had the opportunity.`}
 
     <div class="dash-section">
     <div class="dash-section-label">Business Retention Tools</div>
+    <div class="tile-grid single">
+      <div class="hud-tile legacy-tile" onclick="openModal('legacyModal')">
+        <span class="tile-icon">&#128737;&#65039;</span>
+        <div class="tile-title">Legacy Safeguard</div>
+        <div class="tile-sub">Concierge service &amp; introduction to Integrated Trust Solutions</div>
+        <span class="tile-arrow">&#x203A;</span>
+      </div>
+    </div>
     <div class="tile-grid">
       <div class="hud-tile warning-tile" onclick="openModal('policyLocatorModal')">
         <span class="tile-icon">&#128269;</span>
@@ -1361,6 +1370,40 @@ I just wanted to make sure you had the opportunity.`}
         <a href="https://eapps.naic.org/life-policy-locator/#/welcome" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-radius:10px;background:rgba(255,159,10,0.08);border:1.5px solid var(--warning);color:#a35c00;font-size:16px;font-weight:800;text-decoration:none;">
           &#128269; Open NAIC Policy Locator &nbsp;&#x2197;
         </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     LEGACY SAFEGUARD MODAL
+════════════════════════════════════ -->
+<div id="legacyModal" class="modal-overlay">
+  <div class="modal-wrap">
+    <div class="modal-header">
+      <button class="modal-back" onclick="closeModal('legacyModal')">&#8592;</button>
+      <div class="modal-title">&#128737;&#65039; Legacy Safeguard</div>
+    </div>
+    <div class="modal-content">
+
+      <div style="background:linear-gradient(135deg,#312e81,#4338ca);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 8px 28px rgba(46,38,102,0.5);border:1px solid rgba(255,255,255,0.2);">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,0.75);margin-bottom:9px;">&#128278; Enroll The Clients You Already Have</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:9px;">A concierge service that keeps the policy on the books.</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.95);line-height:1.55;">Enrol your existing clients and their family saves money on the funeral when the time comes &mdash; which is the whole reason they bought from you. It also puts you in front of <strong>Integrated Trust Solutions</strong> for trust business, and a family that felt looked after is a family that refers.</div>
+      </div>
+
+      <a class="action-btn btn-primary" href="https://legacysafeguarduniversity.com/user-login/" target="_blank" rel="noopener" style="display:flex;width:100%;justify-content:center;margin:0 0 8px;">&#128273; Agent Portal &mdash; Enrol A Client &nbsp;&#8599;</a>
+      <a class="mds-link" href="https://a02a41c004c75ffe8d91-b19a28bfebdacc37eb56f25bc81c2f2f.ssl.cf1.rackcdn.com/documents/arcnaaleads/header/Legacy-Safeguard-Presentation.pdf" target="_blank" rel="noopener" style="width:100%;margin:0 0 18px;padding:13px;font-size:14px;">&#128196; Full Program Presentation &nbsp;&#8599;</a>
+
+      <div class="dash-section-label">&#127919; Why It Holds Business</div>
+      <div class="person-card">
+        <div style="font-size:13.5px;color:var(--text);line-height:1.75;">
+          &bull;&nbsp; <strong>Retention.</strong> A client with a concierge benefit attached has a reason to keep the policy that has nothing to do with price.<br>
+          &bull;&nbsp; <strong>Their family saves money.</strong> The service negotiates and coordinates the arrangements, so the payout stretches further than it would have.<br>
+          &bull;&nbsp; <strong>Trust business.</strong> The introduction to Integrated Trust Solutions opens a conversation you were not otherwise going to have.<br>
+          &bull;&nbsp; <strong>Referrals.</strong> Families talk about the agent who made the worst week of their life easier.
+        </div>
       </div>
 
     </div>
